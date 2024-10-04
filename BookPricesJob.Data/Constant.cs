@@ -1,0 +1,9 @@
+namespace BookPricesJob.Data;
+
+public static class Constant
+{
+    public const string MysqlServer = "MYSQL_SERVER";
+    public const string MysqlDatabase = "MYSQL_DATABASE";
+    public const string MysqlUser = "MYSQL_USER";
+    public const string MysqlPassword = "MYSQL_PASSWORD";
+}

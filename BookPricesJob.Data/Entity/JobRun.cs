@@ -1,0 +1,25 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+namespace BookPricesJob.Data.Entity;
+
+public class JobRun
+{
+    [Key]
+    public int Id { get; set; }
+    public int JobId { get; set; }
+    public DateTime Created { get; set; }
+    public DateTime Updated { get; set; }
+    [MaxLength(32)]
+    public string Status { get; set; } = null!;
+    [MaxLength(512)]
+    public string? ErrorMessage { get; set; }
+    [ForeignKey(nameof(JobId))]
+    public Job Job { get; set; } = null!;
+    public List<JobRunArgument> Arguments { get; } = [];
+
+    [Timestamp]
+    public byte[] RowVersion { get; set; } = null!;
+}

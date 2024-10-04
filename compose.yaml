@@ -1,0 +1,23 @@
+networks:
+  localnetwork:
+services:
+  api:
+    build:
+      context: ./
+    image: dsp8ef9/bookprices_jobapi
+    env_file: Docker/api.env
+    ports:
+      - "8080:8080"
+    networks:
+      - localnetwork
+  db:
+    image: mysql:8.4.0
+    command: --mysql-native-password=ON
+    restart: always
+    env_file: Docker/db.env
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./Docker/db/data:/var/lib/mysql
+    networks:
+      - localnetwork

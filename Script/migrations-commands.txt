@@ -1,0 +1,9 @@
+# Add new migration and apply
+dotnet ef migrations add <migration name>
+dotnet ef database update
+
+# Remove migration
+dotnet ef migrations remove <migration name>
+
+# Drop database
+dotnet ef database drop
