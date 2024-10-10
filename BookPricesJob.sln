@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookPrices.Application", "BookPricesJob.Application\BookPrices.Application.csproj", "{283EDFD2-A543-4DE8-972A-C0E0A80A649D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookPricesJob.Application", "BookPricesJob.Application\BookPricesJob.Application.csproj", "{283EDFD2-A543-4DE8-972A-C0E0A80A649D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookPricesJob.Data", "BookPricesJob.Data\BookPricesJob.Data.csproj", "{A1076F5E-050D-46E7-BE7F-1428D3AAEB3C}"
 EndProject

@@ -8,6 +8,11 @@ using BookPricesJob.Application.Service;
 using BookPricesJob.Data.Repository;
 using BookPricesJob.Data;
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using BookPricesJob.API.Model;
+using BookPricesJob.Common.Domain;
 
 
 namespace BookPricesJob.API;
@@ -41,10 +46,34 @@ public class Startup
         var mysqlServerVersion = new MySqlServerVersion(new Version(8, 0, 29));
         services.AddDbContext<DatabaseContext>(
             options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(), mysqlServerVersion, b => b.EnableRetryOnFailure()));
+                EnvironmentHelper.GetConnectionString(),
+                mysqlServerVersion, b => b.EnableRetryOnFailure()));
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration.GetValue<string>(Constant.JwtIssuer),
+                    ValidAudience = Configuration.GetValue<string>(Constant.JwtAudience),
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(Configuration.GetValue<string>(Constant.JwtSigningKey) ?? ""))
+                };
+            });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
+
+        var dtoMapper = new MapperConfiguration(cfg =>
+        {
+            cfg.CreateMap<CreateJobDto, Job>();
+            cfg.CreateMap<Job, JobListItemDto>();
+        }).CreateMapper();
+        services.AddSingleton(dtoMapper);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -58,6 +87,7 @@ public class Startup
         app.UseHttpsRedirection();
 
         app.UseRouting();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.UseEndpoints(endpoints =>
         {

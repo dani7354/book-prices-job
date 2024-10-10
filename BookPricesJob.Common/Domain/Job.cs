@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 
 public record Job(
-    int Id,
+    int? Id,
     bool IsActive,
     string Name,
     string Description,
-    DateTime Created,
+    DateTime? Created,
     IList<JobRun> JobRuns);

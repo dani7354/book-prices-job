@@ -13,15 +13,22 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
 {
     private readonly DatabaseContext _dbContext = dbContext;
 
-    public async Task Add(Job job)
+    public async Task<int> Add(Job job)
     {
         var jobEntity = JobMapper.MapJobToEntity(job);
-        await _dbContext.AddAsync(jobEntity);
+        var addedEntity = await _dbContext.AddAsync(jobEntity);
+        await _dbContext.SaveChangesAsync();
+
+        return addedEntity.Entity.Id;
     }
 
-    public void Delete(int id)
+    public async void Delete(int id)
     {
-        _dbContext.Attach(new Entity.Job { Id = id }).State = EntityState.Deleted;
+        var jobEntity = await _dbContext.Jobs.FirstOrDefaultAsync(x => x.Id == id);
+        if (jobEntity is null)
+            throw new ArgumentException(nameof(id));
+
+        _dbContext.Jobs.Remove(jobEntity);
     }
 
     public async Task<IList<Job>> GetAll()

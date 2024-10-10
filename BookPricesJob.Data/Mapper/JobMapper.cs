@@ -48,7 +48,7 @@ public class JobMapper
         jobEntity.IsActive = jobUpdated.IsActive;
         jobEntity.Name = jobUpdated.Name;
         jobEntity.Description = jobUpdated.Description;
-        jobEntity.Created = jobUpdated.Created;
+        jobEntity.Created = jobUpdated.Created ?? DateTime.Now;
         jobEntity.JobRuns.AddRange(jobUpdated.JobRuns.Select(x => MapJobRunToEntity(x)));
 
         return jobEntity;
