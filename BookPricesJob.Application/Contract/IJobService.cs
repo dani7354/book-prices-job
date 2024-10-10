@@ -8,4 +8,5 @@ public interface IJobService
     Task<IList<Job>> GetJobs();
     Task<Job?> GetById(int id);
     Task DeleteJob(int id);
+    Task UpdateJob(Job job);
 }

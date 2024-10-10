@@ -31,4 +31,10 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         _unitOfWork.JobRepository.Delete(id);
         await _unitOfWork.Complete();
     }
+
+    public Task UpdateJob(Job job)
+    {
+        _unitOfWork.JobRepository.Update(job);
+        return _unitOfWork.Complete();
+    }
 }

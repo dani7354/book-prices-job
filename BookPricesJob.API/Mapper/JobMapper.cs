@@ -17,6 +17,18 @@ public static class JobMapper
         );
     }
 
+    public static Job MapToDomain(UpdateJobDto jobDto)
+    {
+           return new Job(
+            Id: null,
+            IsActive: jobDto.IsActive,
+            Name: jobDto.Name,
+            Description: jobDto.Description,
+            Created: null,
+            JobRuns: []
+        );
+    }
+
     public static JobListItemDto MapToDto(Job job)
     {
         return new JobListItemDto(
