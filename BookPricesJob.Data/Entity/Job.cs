@@ -5,7 +5,8 @@ namespace BookPricesJob.Data.Entity;
 public class Job
 {
     [Key]
-    public int Id { get; set; }
+    [MaxLength(36)]
+    public string Id { get; set; } = null!;
     public bool IsActive { get; set; }
     [MaxLength(256)]
     public string Name { get; set; } = null!;

@@ -30,8 +30,8 @@ public class JobController : ControllerBase
     }
 
     [HttpGet]
-    [Route("{id:int}")]
-    public async Task<IActionResult> GetJob([FromRoute]int id)
+    [Route("{id}")]
+    public async Task<IActionResult> GetJob([FromRoute] string id)
     {
         var job = await _jobService.GetById(id);
         if (job is null)
@@ -53,8 +53,8 @@ public class JobController : ControllerBase
         return CreatedAtAction(nameof(GetJob), new { id = jobId }, job);
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> UpdateJob([FromRoute] int id, [FromBody] UpdateJobDto jobUpdateRequest)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateJob([FromRoute] string id, [FromBody] UpdateJobDto jobUpdateRequest)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -62,15 +62,41 @@ public class JobController : ControllerBase
             return BadRequest();
 
         var job = JobMapper.MapToDomain(jobUpdateRequest);
-
         await _jobService.UpdateJob(job);
+
+        return Ok();
 
     }
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> DeleteJob([FromRoute]int id)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteJob([FromRoute] string id)
     {
-        await _jobService.DeleteJob(id);
+        try
+        {
+            await _jobService.DeleteJob(id);
+            return Ok();
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogError(ex, "Error deleting job");
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting job");
+            return StatusCode(500);
+        }
+    }
+
+    [HttpGet("{id}/jobruns")]
+    public async Task<IActionResult> GetJobRuns([FromRoute] string id)
+    {
+        var job = await _jobService.GetById(id);
+        if (job is null)
+            return NotFound();
+
+        var jobRuns = job.JobRuns;
+        //var jobRunDtos = ; //JobRunMapper.MapToList(jobRuns);
 
         return Ok();
     }

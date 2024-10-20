@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -16,11 +15,11 @@ namespace BookPricesJob.Data.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
-                name: "Jobs",
+                name: "Job",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Id = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Name = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -31,7 +30,7 @@ namespace BookPricesJob.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Jobs", x => x.Id);
+                    table.PrimaryKey("PK_Job", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -39,9 +38,10 @@ namespace BookPricesJob.Data.Migrations
                 name: "JobRun",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    JobId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    JobId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Created = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Updated = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Status = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
@@ -54,9 +54,9 @@ namespace BookPricesJob.Data.Migrations
                 {
                     table.PrimaryKey("PK_JobRun", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_JobRun_Jobs_JobId",
+                        name: "FK_JobRun_Job_JobId",
                         column: x => x.JobId,
-                        principalTable: "Jobs",
+                        principalTable: "Job",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -66,14 +66,13 @@ namespace BookPricesJob.Data.Migrations
                 name: "JobRunArgument",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    JobRunId = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    JobRunId = table.Column<string>(type: "varchar(36)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Type = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Name = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    Value = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     RowVersion = table.Column<DateTime>(type: "timestamp(6)", rowVersion: true, nullable: false)
                 },
@@ -89,6 +88,29 @@ namespace BookPricesJob.Data.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "JobRunArgumentValue",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    JobRunArgumentId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Value = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JobRunArgumentValue", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JobRunArgumentValue_JobRunArgument_JobRunArgumentId",
+                        column: x => x.JobRunArgumentId,
+                        principalTable: "JobRunArgument",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_JobRun_JobId",
                 table: "JobRun",
@@ -98,11 +120,19 @@ namespace BookPricesJob.Data.Migrations
                 name: "IX_JobRunArgument_JobRunId",
                 table: "JobRunArgument",
                 column: "JobRunId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JobRunArgumentValue_JobRunArgumentId",
+                table: "JobRunArgumentValue",
+                column: "JobRunArgumentId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "JobRunArgumentValue");
+
             migrationBuilder.DropTable(
                 name: "JobRunArgument");
 
@@ -110,7 +140,7 @@ namespace BookPricesJob.Data.Migrations
                 name: "JobRun");
 
             migrationBuilder.DropTable(
-                name: "Jobs");
+                name: "Job");
         }
     }
 }

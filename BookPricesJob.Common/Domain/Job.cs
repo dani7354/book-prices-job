@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 
 public record Job(
-    int? Id,
+    string? Id,
     bool IsActive,
     string Name,
     string Description,

@@ -43,7 +43,7 @@ public class Startup
 
         services.AddResponseCaching();
 
-        var mysqlServerVersion = new MySqlServerVersion(new Version(8, 0, 29));
+        var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
         services.AddDbContext<DatabaseContext>(
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(),

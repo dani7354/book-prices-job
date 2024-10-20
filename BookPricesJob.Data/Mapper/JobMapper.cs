@@ -11,7 +11,7 @@ public class JobMapper
             jobRun.Created,
             jobRun.Updated,
             Enum.Parse<JobRunStatus>(jobRun.Status),
-            jobRun.Arguments.Select(x => new JobRunArgument(x.Id, x.Name, x.Type, x.Value)).ToList(),
+            jobRun.Arguments.Select(x => new JobRunArgument(x.Id, x.Name, x.Type, x.Values.Select(z => z.Value).ToArray())).ToList(),
             jobRun.ErrorMessage
         );
     }
@@ -44,12 +44,11 @@ public class JobMapper
     public static Entity.Job MapJobToEntity(Common.Domain.Job jobUpdated, Entity.Job? jobEntity = null)
     {
         jobEntity ??= new Entity.Job();
-
+        jobEntity.Id = jobUpdated.Id ?? Guid.NewGuid().ToString();
         jobEntity.IsActive = jobUpdated.IsActive;
         jobEntity.Name = jobUpdated.Name;
         jobEntity.Description = jobUpdated.Description;
         jobEntity.Created = jobUpdated.Created ?? DateTime.Now;
-        jobEntity.JobRuns.AddRange(jobUpdated.JobRuns.Select(x => MapJobRunToEntity(x)));
 
         return jobEntity;
     }

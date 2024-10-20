@@ -14,27 +14,28 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         return await _unitOfWork.JobRepository.GetJobs();
     }
 
-    public async Task<Job?> GetById(int id)
+    public async Task<Job?> GetById(string id)
     {
         return await _unitOfWork.JobRepository.GetById(id);
     }
 
-    public async Task<int> CreateJob(Job job)
+    public async Task<string> CreateJob(Job job)
     {
         var id = await _unitOfWork.JobRepository.Add(job);
+        await _unitOfWork.Complete();
 
         return id;
     }
 
-    public async Task DeleteJob(int id)
+    public async Task DeleteJob(string id)
     {
-        _unitOfWork.JobRepository.Delete(id);
+        await _unitOfWork.JobRepository.Delete(id);
         await _unitOfWork.Complete();
     }
 
-    public Task UpdateJob(Job job)
+    public async Task UpdateJob(Job job)
     {
-        _unitOfWork.JobRepository.Update(job);
-        return _unitOfWork.Complete();
+        await _unitOfWork.JobRepository.Update(job);
+        await _unitOfWork.Complete();
     }
 }

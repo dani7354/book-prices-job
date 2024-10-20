@@ -5,12 +5,18 @@ namespace BookPricesJob.Data;
 
 public class DatabaseContext : DbContext
 {
-    public DbSet<Job> Jobs { get; set; }
+    public DbSet<Job> Job { get; set; }
+    public DbSet<JobRun> JobRun { get; set; }
+    public DbSet<JobRunArgument> JobRunArgument { get; set; }
+    public DbSet<JobRunArgumentValue> JobRunArgumentValue { get; set; }
+
     public DatabaseContext() { }
+
     public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
     {
         Database.EnsureCreated();
     }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         EnvironmentHelper.LoadEnvFile();

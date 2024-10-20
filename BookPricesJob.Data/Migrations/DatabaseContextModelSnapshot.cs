@@ -24,11 +24,9 @@ namespace BookPricesJob.Data.Migrations
 
             modelBuilder.Entity("BookPricesJob.Data.Entity.Job", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
@@ -53,16 +51,14 @@ namespace BookPricesJob.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Jobs");
+                    b.ToTable("Job");
                 });
 
             modelBuilder.Entity("BookPricesJob.Data.Entity.JobRun", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime(6)");
@@ -71,8 +67,10 @@ namespace BookPricesJob.Data.Migrations
                         .HasMaxLength(512)
                         .HasColumnType("varchar(512)");
 
-                    b.Property<int>("JobId")
-                        .HasColumnType("int");
+                    b.Property<string>("JobId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
 
                     b.Property<DateTime>("RowVersion")
                         .IsConcurrencyToken()
@@ -96,14 +94,13 @@ namespace BookPricesJob.Data.Migrations
 
             modelBuilder.Entity("BookPricesJob.Data.Entity.JobRunArgument", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("JobRunId")
-                        .HasColumnType("int");
+                    b.Property<string>("JobRunId")
+                        .IsRequired()
+                        .HasColumnType("varchar(36)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -120,6 +117,24 @@ namespace BookPricesJob.Data.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("varchar(32)");
 
+                    b.HasKey("Id");
+
+                    b.HasIndex("JobRunId");
+
+                    b.ToTable("JobRunArgument");
+                });
+
+            modelBuilder.Entity("BookPricesJob.Data.Entity.JobRunArgumentValue", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
+
+                    b.Property<string>("JobRunArgumentId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("varchar(36)");
+
                     b.Property<string>("Value")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -127,9 +142,9 @@ namespace BookPricesJob.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("JobRunId");
+                    b.HasIndex("JobRunArgumentId");
 
-                    b.ToTable("JobRunArgument");
+                    b.ToTable("JobRunArgumentValue");
                 });
 
             modelBuilder.Entity("BookPricesJob.Data.Entity.JobRun", b =>
@@ -154,6 +169,17 @@ namespace BookPricesJob.Data.Migrations
                     b.Navigation("JobRun");
                 });
 
+            modelBuilder.Entity("BookPricesJob.Data.Entity.JobRunArgumentValue", b =>
+                {
+                    b.HasOne("BookPricesJob.Data.Entity.JobRunArgument", "JobRunArgument")
+                        .WithMany("Values")
+                        .HasForeignKey("JobRunArgumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("JobRunArgument");
+                });
+
             modelBuilder.Entity("BookPricesJob.Data.Entity.Job", b =>
                 {
                     b.Navigation("JobRuns");
@@ -162,6 +188,11 @@ namespace BookPricesJob.Data.Migrations
             modelBuilder.Entity("BookPricesJob.Data.Entity.JobRun", b =>
                 {
                     b.Navigation("Arguments");
+                });
+
+            modelBuilder.Entity("BookPricesJob.Data.Entity.JobRunArgument", b =>
+                {
+                    b.Navigation("Values");
                 });
 #pragma warning restore 612, 618
         }

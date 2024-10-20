@@ -6,8 +6,8 @@ namespace BookPricesJob.Application.Contract;
 public interface IRepository<T> where T : class
 {
     Task<IList<T>> GetAll();
-    Task<T?> GetById(int id);
-    Task<int> Add(T entity);
-    void Update(T entity);
-    void Delete(int id);
+    Task<T?> GetById(string id);
+    Task<string> Add(T entity);
+    Task Update(T entity);
+    Task Delete(string id);
 }

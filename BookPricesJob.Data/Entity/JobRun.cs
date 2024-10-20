@@ -8,8 +8,11 @@ namespace BookPricesJob.Data.Entity;
 public class JobRun
 {
     [Key]
-    public int Id { get; set; }
-    public int JobId { get; set; }
+    [MaxLength(36)]
+    public string Id { get; set; } = null!;
+
+    [MaxLength(36)]
+    public string JobId { get; set; } = null!;
     public DateTime Created { get; set; }
     public DateTime Updated { get; set; }
     [MaxLength(32)]

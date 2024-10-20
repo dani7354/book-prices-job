@@ -20,7 +20,7 @@ public static class JobMapper
     public static Job MapToDomain(UpdateJobDto jobDto)
     {
            return new Job(
-            Id: null,
+            Id: jobDto.Id,
             IsActive: jobDto.IsActive,
             Name: jobDto.Name,
             Description: jobDto.Description,
@@ -33,7 +33,7 @@ public static class JobMapper
     {
         return new JobListItemDto(
             job.IsActive,
-            job.Id!.Value,
+            job.Id!,
             job.Name,
             job.Description,
             job.Created!.Value
