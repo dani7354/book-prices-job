@@ -17,15 +17,15 @@ public static class JobMapper
         );
     }
 
-    public static Job MapToDomain(UpdateJobDto jobDto)
+    public static Job MapToDomain(UpdateJobFullDto jobDto, Job job)
     {
-           return new Job(
-            Id: jobDto.Id,
+        return new Job(
+            Id: job.Id,
             IsActive: jobDto.IsActive,
             Name: jobDto.Name,
             Description: jobDto.Description,
-            Created: null,
-            JobRuns: []
+            Created: job.Created,
+            JobRuns: job.JobRuns
         );
     }
 

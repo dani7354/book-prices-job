@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookPricesJob.API.Model;
 
-public class UpdateJobDto
+public class UpdateJobFullDto
 {
     [Required]
     public bool IsActive { get; set; }

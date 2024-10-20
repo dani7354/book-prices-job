@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -21,7 +22,7 @@ public class JobController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAllJobs()
+    public async Task<IActionResult> GetAll()
     {
         var jobs =  await _jobService.GetJobs();
         var jobDtos = JobMapper.MapToList(jobs);
@@ -31,7 +32,7 @@ public class JobController : ControllerBase
 
     [HttpGet]
     [Route("{id}")]
-    public async Task<IActionResult> GetJob([FromRoute] string id)
+    public async Task<IActionResult> Get([FromRoute] string id)
     {
         var job = await _jobService.GetById(id);
         if (job is null)
@@ -43,49 +44,63 @@ public class JobController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateJob([FromBody] CreateJobDto jobCreateRequest)
+    public async Task<IActionResult> Create([FromBody] CreateJobDto jobCreateRequest)
     {
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
 
         job = await _jobService.GetById(jobId);
 
-        return CreatedAtAction(nameof(GetJob), new { id = jobId }, job);
+        return CreatedAtAction(nameof(Get), new { id = jobId }, job);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateJob([FromRoute] string id, [FromBody] UpdateJobDto jobUpdateRequest)
+    public async Task<IActionResult> UpdateFull([FromRoute] string id, [FromBody] UpdateJobFullDto jobUpdateRequest)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         if (id != jobUpdateRequest.Id)
             return BadRequest();
 
-        var job = JobMapper.MapToDomain(jobUpdateRequest);
-        await _jobService.UpdateJob(job);
+        var job = await _jobService.GetById(id);
+        if (job is null)
+            return BadRequest();
+
+        var updatedJob = JobMapper.MapToDomain(jobUpdateRequest, job);
+        await _jobService.UpdateJob(updatedJob);
 
         return Ok();
 
     }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteJob([FromRoute] string id)
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> UpdatePartial([FromRoute] string id, [FromBody] UpdateJobPartialDto jobUpdateRequest)
     {
-        try
-        {
-            await _jobService.DeleteJob(id);
-            return Ok();
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogError(ex, "Error deleting job");
-            return NotFound();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting job");
-            return StatusCode(500);
-        }
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var job = await _jobService.GetById(id);
+        if (job is null)
+            return BadRequest();
+
+        if (jobUpdateRequest.IsActive.HasValue)
+            job = job with { IsActive = jobUpdateRequest.IsActive.Value };
+        if (jobUpdateRequest.Name != null)
+            job = job with { Name = jobUpdateRequest.Name };
+        if (jobUpdateRequest.Description != null)
+            job = job with { Description = jobUpdateRequest.Description };
+
+        await _jobService.UpdateJob(job);
+
+        return Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete([FromRoute] string id)
+    {
+        await _jobService.DeleteJob(id);
+
+        return Ok();
     }
 
     [HttpGet("{id}/jobruns")]
