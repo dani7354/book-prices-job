@@ -23,8 +23,7 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
     {
         var jobEntity = await _dbContext.Job
             .AsNoTracking()
-            .Where(x => x.Id == id)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         if (jobEntity is null) return;
         _dbContext.Job.Remove(jobEntity);

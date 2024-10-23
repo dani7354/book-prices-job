@@ -14,7 +14,7 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         return await _unitOfWork.JobRepository.GetJobs();
     }
 
-    public async Task<Job?> GetById(string id)
+    public async Task<Job?> GetJobById(string id)
     {
         return await _unitOfWork.JobRepository.GetById(id);
     }
@@ -37,5 +37,15 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
     {
         await _unitOfWork.JobRepository.Update(job);
         await _unitOfWork.Complete();
+    }
+
+    public Task<IList<JobRun>> GetJobRuns()
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<JobRun?> GetJobRunById(string id)
+    {
+        throw new NotImplementedException();
     }
 }

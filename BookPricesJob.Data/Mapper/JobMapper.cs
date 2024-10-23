@@ -8,6 +8,7 @@ public class JobMapper
     {
         return new Common.Domain.JobRun(
             jobRun.Id,
+            jobRun.JobId,
             jobRun.Created,
             jobRun.Updated,
             Enum.Parse<JobRunStatus>(jobRun.Status),

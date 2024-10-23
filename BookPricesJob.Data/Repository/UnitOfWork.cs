@@ -2,11 +2,20 @@ using BookPricesJob.Application.Contract;
 
 namespace BookPricesJob.Data.Repository;
 
-public class UnitOfWork(DatabaseContext dataContext) : IUnitOfWork
+public class UnitOfWork : IUnitOfWork
 {
-    private readonly DatabaseContext _dataContext = dataContext;
+    private readonly DatabaseContext _dataContext;
 
-    public IJobRepository JobRepository { get; } = new JobRepository(dataContext);
+    public IJobRepository JobRepository { get; }
+
+    public IJobRunRepository JobRunRepository { get; }
+
+    public UnitOfWork(DatabaseContext dataContext)
+    {
+        _dataContext = dataContext;
+        JobRunRepository = new JobRunRepository(dataContext);
+        JobRepository = new JobRepository(dataContext);
+    }
 
     public async Task<int> Complete()
     {

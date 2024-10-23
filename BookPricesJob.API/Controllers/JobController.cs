@@ -8,7 +8,7 @@ namespace BookPricesJob.API.Controllers;
 
 [ApiController]
 [Route("api/jobs")]
-public class JobController : ControllerBase
+public sealed class JobController : ControllerBase
 {
     private readonly ILogger<JobController> _logger;
     private readonly IJobService _jobService;
@@ -34,7 +34,7 @@ public class JobController : ControllerBase
     [Route("{id}")]
     public async Task<IActionResult> Get([FromRoute] string id)
     {
-        var job = await _jobService.GetById(id);
+        var job = await _jobService.GetJobById(id);
         if (job is null)
             return NotFound();
 
@@ -49,7 +49,7 @@ public class JobController : ControllerBase
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
 
-        job = await _jobService.GetById(jobId);
+        job = await _jobService.GetJobById(jobId);
 
         return CreatedAtAction(nameof(Get), new { id = jobId }, job);
     }
@@ -62,7 +62,7 @@ public class JobController : ControllerBase
         if (id != jobUpdateRequest.Id)
             return BadRequest();
 
-        var job = await _jobService.GetById(id);
+        var job = await _jobService.GetJobById(id);
         if (job is null)
             return BadRequest();
 
@@ -79,7 +79,7 @@ public class JobController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var job = await _jobService.GetById(id);
+        var job = await _jobService.GetJobById(id);
         if (job is null)
             return BadRequest();
 
@@ -106,7 +106,7 @@ public class JobController : ControllerBase
     [HttpGet("{id}/jobruns")]
     public async Task<IActionResult> GetJobRuns([FromRoute] string id)
     {
-        var job = await _jobService.GetById(id);
+        var job = await _jobService.GetJobById(id);
         if (job is null)
             return NotFound();
 

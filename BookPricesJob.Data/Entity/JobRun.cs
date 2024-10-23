@@ -20,6 +20,7 @@ public class JobRun
     [MaxLength(512)]
     public string? ErrorMessage { get; set; }
     [ForeignKey(nameof(JobId))]
+    [DeleteBehavior(DeleteBehavior.Cascade)]
     public Job Job { get; set; } = null!;
     public List<JobRunArgument> Arguments { get; } = [];
 

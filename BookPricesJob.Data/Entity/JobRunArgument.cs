@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data.Entity;
 
@@ -14,8 +15,9 @@ public class JobRunArgument
     [MaxLength(256)]
     public string Name { get; set; } = null!;
     [ForeignKey(nameof(JobRunId))]
+    [DeleteBehavior(DeleteBehavior.Cascade)]
     public JobRun JobRun { get; init; } = null!;
-    public List<JobRunArgumentValue> Values { get; } = [];
+    public List<JobRunArgumentValue> Values { get; set; } = [];
 
     [Timestamp]
     public byte[] RowVersion { get; set; } = null!;
