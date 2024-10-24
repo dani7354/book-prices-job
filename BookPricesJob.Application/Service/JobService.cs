@@ -9,6 +9,8 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
+    #region Job
+
     public async Task<IList<Job>> GetJobs()
     {
         return await _unitOfWork.JobRepository.GetJobs();
@@ -38,14 +40,38 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         await _unitOfWork.JobRepository.Update(job);
         await _unitOfWork.Complete();
     }
+    #endregion
 
-    public Task<IList<JobRun>> GetJobRuns()
+    #region JobRun
+    public async Task<IList<JobRun>> GetJobRuns()
     {
-        throw new NotImplementedException();
+        return await _unitOfWork.JobRunRepository.GetAll();
     }
 
-    public Task<JobRun?> GetJobRunById(string id)
+    public async Task<JobRun?> GetJobRunById(string id)
     {
-        throw new NotImplementedException();
+        return await _unitOfWork.JobRunRepository.GetById(id);
     }
+
+    public async Task<string> CreateJobRun(JobRun jobRun)
+    {
+        var id = await _unitOfWork.JobRunRepository.Add(jobRun);
+        await _unitOfWork.Complete();
+
+        return id;
+    }
+
+    public async Task UpdateJobRun(JobRun jobRun)
+    {
+        await _unitOfWork.JobRunRepository.Update(jobRun);
+        await _unitOfWork.Complete();
+    }
+
+    public async Task DeleteJobRun(string id)
+    {
+        await _unitOfWork.JobRunRepository.Delete(id);
+        await _unitOfWork.Complete();
+    }
+
+    #endregion
 }

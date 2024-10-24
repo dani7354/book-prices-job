@@ -8,7 +8,7 @@ public static class JobRunMapper
     public static Data.Entity.JobRun MapToNewEntity(Common.Domain.JobRun jobRunDomain)
     {
         var entity = new Data.Entity.JobRun();
-        entity.Id = jobRunDomain.Id;
+        entity.Id = Guid.NewGuid().ToString();
         entity.JobId = jobRunDomain.JobId;
         entity.Status = jobRunDomain.Status.ToString();
         entity.Created = DateTime.UtcNow;
@@ -16,9 +16,10 @@ public static class JobRunMapper
 
         var arguments = jobRunDomain.Arguments.Select(x => new Data.Entity.JobRunArgument
             {
-                JobRunId = jobRunDomain.Id,
+                JobRunId = Guid.NewGuid().ToString(),
                 Name = x.Name,
-                Values = x.Values.Select(v => new JobRunArgumentValue { Value = v }).ToList()
+                Values = x.Values.Select(
+                    v => new JobRunArgumentValue { Id = Guid.NewGuid().ToString(), Value = v }).ToList()
             }).ToList();
 
         entity.Arguments.AddRange(arguments);
@@ -28,14 +29,14 @@ public static class JobRunMapper
 
     public static Data.Entity.JobRun MapToEntity(Common.Domain.JobRun jobRunDomain, Data.Entity.JobRun jobRunEntity)
     {
-        jobRunEntity.Id = jobRunDomain.Id;
+        jobRunEntity.Id = jobRunDomain.Id!;
         jobRunEntity.JobId = jobRunDomain.JobId;
         jobRunEntity.Status = jobRunDomain.Status.ToString();
         jobRunEntity.Updated = DateTime.UtcNow;
 
         var arguments = jobRunDomain.Arguments.Select(x => new Data.Entity.JobRunArgument
             {
-                JobRunId = jobRunDomain.Id,
+                JobRunId = jobRunDomain.Id!,
                 Name = x.Name,
                 Values = x.Values.Select(v => new JobRunArgumentValue { Value = v }).ToList()
             }).ToList();
