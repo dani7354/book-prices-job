@@ -13,6 +13,8 @@ public interface IJobService
 
     // JobRun
     Task<IList<JobRun>> GetJobRuns();
+    Task<IList<JobRun>> GetJobRunsByJobId(string jobId);
+    Task<IList<JobRun>> GetJobRunsByJobIdAndStatus(string jobId, JobRunStatus status);
     Task<JobRun?> GetJobRunById(string id);
     Task<string> CreateJobRun(JobRun jobRun);
     Task UpdateJobRun(JobRun jobRun);

@@ -8,7 +8,7 @@ namespace BookPricesJob.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController : ControllerBase
+public sealed class AuthController : ControllerBase
 {
     private readonly ILogger<AuthController> _logger;
     private readonly UserManager<IdentityUser> _userManager;

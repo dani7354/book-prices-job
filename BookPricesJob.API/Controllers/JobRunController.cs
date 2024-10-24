@@ -15,14 +15,21 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     public async Task<IActionResult> JobRuns([FromQuery] int limit = 100, [FromQuery] string? status = null)
     {
         var jobRuns = await _jobService.GetJobRuns();
-        return Ok(jobRuns); // TODO: Map to DTO
+        var jobRunDtos = JobRunMapper.MapToListDto(jobRuns);
+
+        return Ok(jobRunDtos);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> JobRun([FromRoute] string id)
     {
         var jobRun = await _jobService.GetJobRunById(id);
-        return Ok(jobRun); // TODO: Map to DTO
+        if (jobRun is null)
+            return NotFound($"JobRun with id {id} not found!");
+
+        var jobRunDto = JobRunMapper.MapToDto(jobRun);
+
+        return Ok(jobRunDto);
     }
 
     [HttpPost]
