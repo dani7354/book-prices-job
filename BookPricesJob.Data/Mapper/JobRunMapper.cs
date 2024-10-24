@@ -55,6 +55,7 @@ public static class JobRunMapper
             jobRunEntity.Created,
             jobRunEntity.Updated,
             Enum.Parse<JobRunStatus>(jobRunEntity.Status),
+            Enum.Parse<JobRunPriority>(jobRunEntity.Priority),
             jobRunEntity.Arguments.Select(
                 x => new Common.Domain.JobRunArgument(x.Id, x.Name, x.Type, x.Values.Select(v => v.Value).ToArray())).ToList(),
             jobRunEntity.ErrorMessage

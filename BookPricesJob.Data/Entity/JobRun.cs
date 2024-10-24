@@ -17,6 +17,8 @@ public class JobRun
     public DateTime Updated { get; set; }
     [MaxLength(32)]
     public string Status { get; set; } = null!;
+    [MaxLength(32)]
+    public string Priority { get; set; } = null!;
     [MaxLength(512)]
     public string? ErrorMessage { get; set; }
     [ForeignKey(nameof(JobId))]
