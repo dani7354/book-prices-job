@@ -32,4 +32,31 @@ public static class JobRunMapper
             ErrorMessage: jobRunDto.ErrorMessage
         );
     }
+
+    public static IList<JobRunListItemDto> MapToListDto(IList<JobRun> jobRuns)
+    {
+        return jobRuns.Select(
+            x => new JobRunListItemDto(
+                x.Id!,
+                x.JobId,
+                x.Priority.ToString(),
+                x.Status.ToString(),
+                x.Created,
+                x.Updated)).ToList();
+    }
+
+    public static JobRunDto MapToDto(JobRun jobRun)
+    {
+        return new JobRunDto(
+            jobRun.Id!,
+            jobRun.JobId,
+            jobRun.Priority.ToString(),
+            jobRun.Status.ToString(),
+            jobRun.Created,
+            jobRun.Updated,
+            jobRun.Arguments.Select(
+                x => new JobRunArgumentDto() { Name = x.Name, Type = x.Type, Values = x.Values }).ToList(),
+            jobRun.ErrorMessage
+        );
+    }
 }
