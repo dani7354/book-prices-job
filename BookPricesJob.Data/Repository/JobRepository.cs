@@ -34,7 +34,7 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         var jobEntities = await _dbContext.Job
             .AsNoTracking()
             .Include(j => j.JobRuns)
-            .ThenInclude(x => x.Arguments)
+                .ThenInclude(x => x.Arguments)
             .ToListAsync();
 
         return jobEntities.Select(JobMapper.MapJobToDomain).ToList();
@@ -45,7 +45,7 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         var jobEntity = await _dbContext.Job
             .AsNoTracking()
             .Include(j => j.JobRuns)
-            .ThenInclude(x => x.Arguments)
+                .ThenInclude(x => x.Arguments)
             .FirstOrDefaultAsync(j => j.Id == id);
 
         return jobEntity == null ? null : JobMapper.MapJobToDomain(jobEntity);
@@ -56,7 +56,7 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         var jobs = await _dbContext.Job
             .AsNoTracking()
             .Include(j => j.JobRuns)
-            .ThenInclude(x => x.Arguments)
+                .ThenInclude(x => x.Arguments)
             .ToListAsync();
 
         return jobs.Select(JobMapper.MapJobToDomain).ToList();

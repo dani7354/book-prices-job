@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
-using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -99,19 +98,6 @@ public sealed class JobController : ControllerBase
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         await _jobService.DeleteJob(id);
-
-        return Ok();
-    }
-
-    [HttpGet("{id}/jobruns")]
-    public async Task<IActionResult> GetJobRuns([FromRoute] string id)
-    {
-        var job = await _jobService.GetJobById(id);
-        if (job is null)
-            return NotFound();
-
-        var jobRuns = job.JobRuns;
-        //var jobRunDtos = ; //JobRunMapper.MapToList(jobRuns);
 
         return Ok();
     }

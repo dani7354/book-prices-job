@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Application.Mapper;
 using BookPricesJob.Common.Domain;
@@ -27,6 +25,27 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
 
         if (jobRunEntity is null) return;
         _dbContext.JobRun.Remove(jobRunEntity);
+    }
+
+    public async Task<IList<JobRun>> FilterBy(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit)
+    {
+        var query = _dbContext.JobRun.AsNoTracking();
+
+        if (jobId is not null)
+            query = query.Where(j => j.JobId == jobId);
+        if (status is not null)
+            query = query.Where(j => j.Status == status.Value.ToString());
+        if (priority is not null)
+            query = query.Where(j => j.Priority == priority.Value.ToString());
+        if (limit is not null)
+            query = query.Take(limit.Value);
+
+        var jobRuns = await query
+            .Include(j => j.Arguments)
+                .ThenInclude(x => x.Values)
+            .ToListAsync();
+
+        return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
     }
 
     public async Task<IList<JobRun>> GetAll()

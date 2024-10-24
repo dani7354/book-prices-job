@@ -12,9 +12,18 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     private readonly IJobService _jobService = jobService;
 
     [HttpGet]
-    public async Task<IActionResult> JobRuns([FromQuery] int limit = 100, [FromQuery] string? status = null)
+    public async Task<IActionResult> JobRuns(
+        [FromQuery] int? limit = null,
+        [FromQuery] string? jobId = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? priority = null)
     {
-        var jobRuns = await _jobService.GetJobRuns();
+        JobRunStatus? jobRunStatus = Enum.TryParse<JobRunStatus>(
+            status, true, out var statusEnum) ? statusEnum : null;
+        JobRunPriority? jobRunPriority = Enum.TryParse<JobRunPriority>(
+            priority, true, out var priorityEnum) ? priorityEnum : null;
+
+        var jobRuns = await _jobService.FilterJobRuns(jobId, jobRunStatus, jobRunPriority, limit);
         var jobRunDtos = JobRunMapper.MapToListDto(jobRuns);
 
         return Ok(jobRunDtos);
@@ -83,7 +92,8 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
         if (jobRunDto.Priority is not null)
             jobRun = jobRun with { Priority = Enum.Parse<JobRunPriority>(jobRunDto.Priority) };
         if (jobRunDto.Arguments.Any())
-            jobRun = jobRun with { Arguments = jobRunDto.Arguments.Select(x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values)).ToList() };
+            jobRun = jobRun with { Arguments = jobRunDto.Arguments.Select(
+                x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values)).ToList() };
 
         await _jobService.UpdateJobRun(jobRun);
 
@@ -94,6 +104,7 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     public async Task<IActionResult> DeleteJobRun([FromRoute] string id)
     {
         await _jobService.DeleteJobRun(id);
+
         return Ok();
     }
 }

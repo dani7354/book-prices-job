@@ -73,5 +73,10 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         await _unitOfWork.Complete();
     }
 
+    public async Task<IList<JobRun>> FilterJobRuns(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit)
+    {
+        return await _unitOfWork.JobRunRepository.FilterBy(jobId, status, priority, limit);
+    }
+
     #endregion
 }

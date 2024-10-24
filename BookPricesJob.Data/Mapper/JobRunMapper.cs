@@ -17,8 +17,9 @@ public static class JobRunMapper
 
         var arguments = jobRunDomain.Arguments.Select(x => new Data.Entity.JobRunArgument
             {
-                JobRunId = Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 Name = x.Name,
+                Type = x.Type,
                 Values = x.Values.Select(
                     v => new JobRunArgumentValue { Id = Guid.NewGuid().ToString(), Value = v }).ToList()
             }).ToList();
