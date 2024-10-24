@@ -4,7 +4,6 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.Application.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations.Operations;
 
 namespace BookPricesJob.Data.Repository;
 
@@ -22,12 +21,12 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
 
     public async Task Delete(string id)
     {
-        var jobRunEntity = await _dbContext.Job
+        var jobRunEntity = await _dbContext.JobRun
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (jobRunEntity is null) return;
-        _dbContext.Job.Remove(jobRunEntity);
+        _dbContext.JobRun.Remove(jobRunEntity);
     }
 
     public async Task<IList<JobRun>> GetAll()
@@ -54,10 +53,12 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
 
     public async Task Update(JobRun jobRunDomain)
     {
-        var existingEntity = await _dbContext.JobRun.FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id);
-        if (existingEntity is null)
-            throw new KeyNotFoundException($"JobRun with id {jobRunDomain.Id} not found");
+        var existingEntity = await _dbContext.JobRun
+            .Include(j => j.Arguments)
+            .FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id) ??
+                throw new KeyNotFoundException($"JobRun with id {jobRunDomain.Id} not found");
 
+        _dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
         var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
 
         _dbContext.JobRun.Update(updatedJobRun);

@@ -11,6 +11,7 @@ public static class JobRunMapper
         entity.Id = Guid.NewGuid().ToString();
         entity.JobId = jobRunDomain.JobId;
         entity.Status = jobRunDomain.Status.ToString();
+        entity.Priority = jobRunDomain.Priority.ToString();
         entity.Created = DateTime.UtcNow;
         entity.Updated = DateTime.UtcNow;
 
@@ -33,12 +34,15 @@ public static class JobRunMapper
         jobRunEntity.JobId = jobRunDomain.JobId;
         jobRunEntity.Status = jobRunDomain.Status.ToString();
         jobRunEntity.Updated = DateTime.UtcNow;
+        jobRunEntity.ErrorMessage = jobRunDomain.ErrorMessage;
 
         var arguments = jobRunDomain.Arguments.Select(x => new Data.Entity.JobRunArgument
             {
+                Id = Guid.NewGuid().ToString(),
                 JobRunId = jobRunDomain.Id!,
                 Name = x.Name,
-                Values = x.Values.Select(v => new JobRunArgumentValue { Value = v }).ToList()
+                Type = x.Type,
+                Values = x.Values.Select(v => new JobRunArgumentValue { Id = Guid.NewGuid().ToString(), Value = v }).ToList()
             }).ToList();
 
         jobRunEntity.Arguments.Clear();
