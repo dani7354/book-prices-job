@@ -73,9 +73,19 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         await _unitOfWork.Complete();
     }
 
-    public async Task<IList<JobRun>> FilterJobRuns(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit)
+    public async Task<IList<(JobRun, Job)>> FilterJobRuns(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit)
     {
-        return await _unitOfWork.JobRunRepository.FilterBy(jobId, status, priority, limit);
+        var jobRuns = await _unitOfWork.JobRunRepository.FilterBy(jobId, status, priority, limit);
+
+        var jobsForJobRuns = new Dictionary<string, Job>();
+        foreach (var id in jobRuns.Select(x => x.JobId).Distinct())
+        {
+            var job = await _unitOfWork.JobRepository.GetById(id);
+            if (job is not null)
+                jobsForJobRuns.Add(id, job);
+        }
+
+        return jobRuns.Select(x => (x, jobsForJobRuns[x.JobId])).ToList();
     }
 
     #endregion

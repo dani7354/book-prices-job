@@ -29,7 +29,7 @@ public static class JobMapper
         );
     }
 
-    public static JobListItemDto MapToDto(Job job)
+    public static JobListItemDto MapToListItemDto(Job job)
     {
         return new JobListItemDto(
             job.IsActive,
@@ -40,8 +40,22 @@ public static class JobMapper
         );
     }
 
+    public static JobDto MapToDto(Job job)
+    {
+        return new JobDto(
+            Id: job.Id!,
+            IsActive: job.IsActive,
+            Name: job.Name,
+            Description: job.Description,
+            Created: job.Created!.Value,
+            JobRuns: job.JobRuns
+                .Select(x => JobRunMapper.MapToListItemDto(x, job.Name))
+                .ToList()
+        );
+    }
+
     public static IList<JobListItemDto> MapToList(IList<Job> jobs)
     {
-        return jobs.Select(MapToDto).ToList();
+        return jobs.Select(MapToListItemDto).ToList();
     }
 }

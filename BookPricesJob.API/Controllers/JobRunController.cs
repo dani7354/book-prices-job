@@ -36,7 +36,11 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
         if (jobRun is null)
             return NotFound($"JobRun with id {id} not found!");
 
-        var jobRunDto = JobRunMapper.MapToDto(jobRun);
+        var job = await _jobService.GetJobById(jobRun.JobId);
+        if (job is null)
+            return NotFound($"Could not find related Job with id {jobRun.JobId} for JobRun!");
+
+        var jobRunDto = JobRunMapper.MapToDto(jobRun, job.Name);
 
         return Ok(jobRunDto);
     }

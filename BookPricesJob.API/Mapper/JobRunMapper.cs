@@ -33,23 +33,32 @@ public static class JobRunMapper
         );
     }
 
-    public static IList<JobRunListItemDto> MapToListDto(IList<JobRun> jobRuns)
+    public static IList<JobRunListItemDto> MapToListDto(IList<(JobRun, Job)> jobRuns)
     {
-        return jobRuns.Select(
-            x => new JobRunListItemDto(
-                x.Id!,
-                x.JobId,
-                x.Priority.ToString(),
-                x.Status.ToString(),
-                x.Created,
-                x.Updated)).ToList();
+        return jobRuns
+            .Select(x => MapToListItemDto(x.Item1, x.Item2.Name))
+            .ToList();
     }
 
-    public static JobRunDto MapToDto(JobRun jobRun)
+    public static JobRunListItemDto MapToListItemDto(JobRun jobRun, string jobName)
+    {
+        return new JobRunListItemDto(
+            jobRun.Id!,
+            jobRun.JobId,
+            jobName,
+            jobRun.Priority.ToString(),
+            jobRun.Status.ToString(),
+            jobRun.Created,
+            jobRun.Updated
+        );
+    }
+
+    public static JobRunDto MapToDto(JobRun jobRun, string jobName)
     {
         return new JobRunDto(
             jobRun.Id!,
             jobRun.JobId,
+            jobName,
             jobRun.Priority.ToString(),
             jobRun.Status.ToString(),
             jobRun.Created,

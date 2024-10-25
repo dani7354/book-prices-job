@@ -3,8 +3,10 @@ using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Data.Mapper;
 
-public class JobMapper
+public static class JobMapper
 {
+    private const int MaxJobRunsToInclude = 50;
+
     public static Job MapJobToDomain(Entity.Job job)
     {
         return new Job(
@@ -13,7 +15,11 @@ public class JobMapper
             job.Name,
             job.Description,
             job.Created,
-            job.JobRuns.Select(JobRunMapper.MapToDomain).ToList()
+            job.JobRuns
+                .OrderByDescending(x => x.Updated)
+                .Take(MaxJobRunsToInclude)
+                .Select(JobRunMapper.MapToDomain)
+                .ToList()
         );
     }
 
