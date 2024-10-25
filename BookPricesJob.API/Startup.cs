@@ -13,6 +13,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using BookPricesJob.API.Model;
 using BookPricesJob.Common.Domain;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using System.Net.Mime;
 
 
 namespace BookPricesJob.API;
@@ -35,7 +39,12 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddControllers();
+        services.AddControllers(options =>
+        {
+            options.Filters.Add(new ProducesAttribute(MediaTypeNames.Application.Json));
+            options.Filters.Add(new ConsumesAttribute(MediaTypeNames.Application.Json));
+            options.RespectBrowserAcceptHeader = false;
+        });
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

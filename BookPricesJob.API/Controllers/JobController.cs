@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
+using System.Net.Mime;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -21,6 +22,7 @@ public sealed class JobController : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType<IList<JobListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
         var jobs =  await _jobService.GetJobs();
@@ -29,8 +31,9 @@ public sealed class JobController : ControllerBase
         return Ok(jobDtos);
     }
 
-    [HttpGet]
-    [Route("{id}")]
+    [HttpGet("{id}")]
+    [ProducesResponseType<JobDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] string id)
     {
         var job = await _jobService.GetJobById(id);
@@ -43,17 +46,25 @@ public sealed class JobController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType<JobDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateJobDto jobCreateRequest)
     {
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
 
         job = await _jobService.GetJobById(jobId);
+        if (job is null)
+            return BadRequest($"Job with id {jobId} not created!");
 
-        return CreatedAtAction(nameof(Get), new { id = jobId }, job);
+        var jobDto = JobMapper.MapToDto(job);
+
+        return CreatedAtAction(nameof(Get), new { id = jobId }, jobDto);
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateFull(
         [FromRoute] string id,
         [FromBody] UpdateJobFullDto jobUpdateRequest)
@@ -75,6 +86,8 @@ public sealed class JobController : ControllerBase
     }
 
     [HttpPatch("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdatePartial(
         [FromRoute] string id,
         [FromBody] UpdateJobPartialDto jobUpdateRequest)
@@ -99,6 +112,7 @@ public sealed class JobController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         await _jobService.DeleteJob(id);

@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using BookPricesJob.Application.Contract;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Identity;
 using BookPricesJob.API.Model;
 

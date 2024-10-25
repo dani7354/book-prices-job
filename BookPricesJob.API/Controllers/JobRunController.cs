@@ -1,3 +1,4 @@
+using System.Net.Mime;
 using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
@@ -12,6 +13,7 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     private readonly IJobService _jobService = jobService;
 
     [HttpGet]
+    [ProducesResponseType<IList<JobRunListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> JobRuns(
         [FromQuery] int? limit = null,
         [FromQuery] string? jobId = null,
@@ -30,6 +32,8 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [ProducesResponseType<JobRunDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> JobRun([FromRoute] string id)
     {
         var jobRun = await _jobService.GetJobRunById(id);
@@ -46,6 +50,8 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType<JobRunDto>(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateJobRun([FromBody] CreateJobRunDto jobRunDto)
     {
         var jobRun = JobRunMapper.MapToDomain(jobRunDto);
@@ -53,12 +59,20 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
 
         jobRun = await _jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
-            return BadRequest();
+            return BadRequest($"JobRun was not created!");
 
-        return CreatedAtAction(nameof(JobRun), new { id = jobRunId }, jobRun);
+        var job = await _jobService.GetJobById(jobRun.JobId);
+        if (job is null)
+            return BadRequest($"Related Job with {jobRun.JobId} not found!");
+
+        var jobRunResponseDto = JobRunMapper.MapToDto(jobRun, job.Name);
+
+        return CreatedAtAction(nameof(JobRun), new { id = jobRunId }, jobRunResponseDto);
     }
 
     [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateJobRunFull(
         [FromRoute] string id,
         [FromBody] UpdateJobRunFullDto jobRunDto)
@@ -80,6 +94,8 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     }
 
     [HttpPatch("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateJobRunPartial(
         [FromRoute] string id,
         [FromBody] UpdateJobRunPartialDto jobRunDto)
@@ -109,6 +125,7 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteJobRun([FromRoute] string id)
     {
         await _jobService.DeleteJobRun(id);
