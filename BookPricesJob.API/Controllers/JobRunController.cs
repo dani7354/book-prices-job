@@ -59,7 +59,9 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateJobRunFull([FromRoute] string id, [FromBody] UpdateJobRunFullDto jobRunDto)
+    public async Task<IActionResult> UpdateJobRunFull(
+        [FromRoute] string id,
+        [FromBody] UpdateJobRunFullDto jobRunDto)
     {
         if (id != jobRunDto.JobRunId)
             return BadRequest("JobRunIds do not match!");
@@ -78,7 +80,9 @@ public sealed class JobRunController(IJobService jobService) : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdateJobRunPartial([FromRoute] string id, [FromBody] UpdateJobRunPartialDto jobRunDto)
+    public async Task<IActionResult> UpdateJobRunPartial(
+        [FromRoute] string id,
+        [FromBody] UpdateJobRunPartialDto jobRunDto)
     {
         if (id == jobRunDto.JobRunId)
             return BadRequest("JobRunIds do not match!");

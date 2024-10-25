@@ -54,7 +54,9 @@ public sealed class JobController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateFull([FromRoute] string id, [FromBody] UpdateJobFullDto jobUpdateRequest)
+    public async Task<IActionResult> UpdateFull(
+        [FromRoute] string id,
+        [FromBody] UpdateJobFullDto jobUpdateRequest)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -73,7 +75,9 @@ public sealed class JobController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> UpdatePartial([FromRoute] string id, [FromBody] UpdateJobPartialDto jobUpdateRequest)
+    public async Task<IActionResult> UpdatePartial(
+        [FromRoute] string id,
+        [FromBody] UpdateJobPartialDto jobUpdateRequest)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
