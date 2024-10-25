@@ -1,4 +1,3 @@
-using System.Net.Mime;
 using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
@@ -8,9 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace BookPricesJob.API.Controllers;
 
 [Route("api/jobruns")]
-public sealed class JobRunController(IJobService jobService) : ControllerBase
+public sealed class JobRunController(IJobService jobService, ILogger<JobRunController> logger) : ControllerBase
 {
     private readonly IJobService _jobService = jobService;
+    private readonly ILogger<JobRunController> _logger = logger;
 
     [HttpGet]
     [ProducesResponseType<IList<JobRunListItemDto>>(StatusCodes.Status200OK)]

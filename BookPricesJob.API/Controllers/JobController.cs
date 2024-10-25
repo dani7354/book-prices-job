@@ -7,18 +7,10 @@ namespace BookPricesJob.API.Controllers;
 
 [ApiController]
 [Route("api/jobs")]
-public sealed class JobController : ControllerBase
+public sealed class JobController(IJobService jobService, ILogger<JobController> logger) : ControllerBase
 {
-    private readonly ILogger<JobController> _logger;
-    private readonly IJobService _jobService;
-
-    public JobController(
-        ILogger<JobController> logger,
-        IJobService jobService)
-    {
-        _logger = logger;
-        _jobService = jobService;
-    }
+    private readonly IJobService _jobService = jobService;
+    private readonly ILogger<JobController> _logger = logger;
 
     [HttpGet]
     [ProducesResponseType<IList<JobListItemDto>>(StatusCodes.Status200OK)]
