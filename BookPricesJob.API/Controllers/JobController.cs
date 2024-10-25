@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
-using System.Net.Mime;
 
 namespace BookPricesJob.API.Controllers;
 
