@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookPricesJob.API.Model;
 
-public class UserRegisterDto
+public class UserRegisterRequest
 {
     [Required]
     [MaxLength(256)]

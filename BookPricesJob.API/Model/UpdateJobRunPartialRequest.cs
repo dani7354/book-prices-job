@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookPricesJob.API.Model;
 
-public class UpdateJobRunPartialDto
+public class UpdateJobRunPartialRequest
 {
     [Required]
     public string JobRunId { get; set; } = null!;

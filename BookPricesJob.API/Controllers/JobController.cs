@@ -44,7 +44,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType<JobDto>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Create([FromBody] CreateJobDto jobCreateRequest)
+    public async Task<IActionResult> Create([FromBody] CreateJobRequest jobCreateRequest)
     {
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
@@ -64,7 +64,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateFull(
         [FromRoute] string id,
-        [FromBody] UpdateJobFullDto jobUpdateRequest)
+        [FromBody] UpdateJobFullRequest jobUpdateRequest)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -88,7 +88,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdatePartial(
         [FromRoute] string id,
-        [FromBody] UpdateJobPartialDto jobUpdateRequest)
+        [FromBody] UpdateJobPartialRequest jobUpdateRequest)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);

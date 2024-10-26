@@ -59,9 +59,9 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<JobRunDto>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateJobRun([FromBody] CreateJobRunDto jobRunDto)
+    public async Task<IActionResult> CreateJobRun([FromBody] CreateJobRunRequest createJobRunRequest)
     {
-        var jobRun = JobRunMapper.MapToDomain(jobRunDto);
+        var jobRun = JobRunMapper.MapToDomain(createJobRunRequest);
         var jobRunId = await _jobService.CreateJobRun(jobRun);
 
         jobRun = await _jobService.GetJobRunById(jobRunId);
@@ -83,9 +83,9 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateJobRunFull(
         [FromRoute] string id,
-        [FromBody] UpdateJobRunFullDto jobRunDto)
+        [FromBody] UpdateJobRunFullRequest updateJobRunRequest)
     {
-        if (id != jobRunDto.JobRunId)
+        if (id != updateJobRunRequest.JobRunId)
             return BadRequest("JobRunIds do not match!");
 
         if (!ModelState.IsValid)
@@ -95,7 +95,10 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (jobRun is null)
             return BadRequest($"JobRun with id {id} not found!");
 
-        var updatedJobRun = JobRunMapper.MapToDomain(jobRunDto, jobRun);
+        var updatedJobRun = JobRunMapper.MapToDomain(
+            updateJobRunRequest,
+            jobRun);
+
         await _jobService.UpdateJobRun(updatedJobRun);
 
         return Ok();
@@ -107,9 +110,9 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateJobRunPartial(
         [FromRoute] string id,
-        [FromBody] UpdateJobRunPartialDto jobRunDto)
+        [FromBody] UpdateJobRunPartialRequest updateJobRunRequest)
     {
-        if (id == jobRunDto.JobRunId)
+        if (id == updateJobRunRequest.JobRunId)
             return BadRequest("JobRunIds do not match!");
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -118,14 +121,14 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (jobRun is null)
             return BadRequest($"JobRun with id {id} not found!");
 
-        if (jobRunDto.ErrorMessage is not null)
-            jobRun = jobRun with { ErrorMessage = jobRunDto.ErrorMessage };
-        if (jobRunDto.Status is not null)
-            jobRun = jobRun with { Status = Enum.Parse<JobRunStatus>(jobRunDto.Status) };
-        if (jobRunDto.Priority is not null)
-            jobRun = jobRun with { Priority = Enum.Parse<JobRunPriority>(jobRunDto.Priority) };
-        if (jobRunDto.Arguments.Any())
-            jobRun = jobRun with { Arguments = jobRunDto.Arguments.Select(
+        if (updateJobRunRequest.ErrorMessage is not null)
+            jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };
+        if (updateJobRunRequest.Status is not null)
+            jobRun = jobRun with { Status = Enum.Parse<JobRunStatus>(updateJobRunRequest.Status) };
+        if (updateJobRunRequest.Priority is not null)
+            jobRun = jobRun with { Priority = Enum.Parse<JobRunPriority>(updateJobRunRequest.Priority) };
+        if (updateJobRunRequest.Arguments.Any())
+            jobRun = jobRun with { Arguments = updateJobRunRequest.Arguments.Select(
                 x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values)).ToList() };
 
         await _jobService.UpdateJobRun(jobRun);

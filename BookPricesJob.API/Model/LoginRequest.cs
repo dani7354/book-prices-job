@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BookPricesJob.API.Model;
 
-public class LoginRequestModel
+public class LoginRequest
 {
     [Required]
     [MaxLength(256)]

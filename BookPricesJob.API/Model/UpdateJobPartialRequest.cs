@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace BookPricesJob.API.Model;
 
-public class UpdateJobPartialDto
+public class UpdateJobPartialRequest
 {
     [Required]
     [MaxLength(36)]

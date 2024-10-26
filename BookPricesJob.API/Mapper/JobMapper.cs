@@ -5,7 +5,7 @@ namespace BookPricesJob.API.Mapper;
 
 public static class JobMapper
 {
-    public static Job MapToDomain(CreateJobDto jobDto)
+    public static Job MapToDomain(CreateJobRequest jobDto)
     {
         return new Job(
             Id: null,
@@ -17,7 +17,7 @@ public static class JobMapper
         );
     }
 
-    public static Job MapToDomain(UpdateJobFullDto jobDto, Job job)
+    public static Job MapToDomain(UpdateJobFullRequest jobDto, Job job)
     {
         return new Job(
             Id: job.Id,

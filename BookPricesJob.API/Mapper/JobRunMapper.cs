@@ -5,7 +5,7 @@ namespace BookPricesJob.API.Mapper;
 
 public static class JobRunMapper
 {
-    public static JobRun MapToDomain(CreateJobRunDto jobRunDto)
+    public static JobRun MapToDomain(CreateJobRunRequest jobRunDto)
     {
         return new JobRun(
             Id: null,
@@ -19,7 +19,7 @@ public static class JobRunMapper
         );
     }
 
-    public static JobRun MapToDomain(UpdateJobRunFullDto jobRunDto, JobRun jobRun)
+    public static JobRun MapToDomain(UpdateJobRunFullRequest jobRunDto, JobRun jobRun)
     {
         return new JobRun(
             Id: jobRun.Id,

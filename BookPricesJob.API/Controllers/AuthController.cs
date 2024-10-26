@@ -30,7 +30,7 @@ public sealed class AuthController : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Login([FromBody] LoginRequestModel loginRequest)
+    public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
         _logger.LogInformation("Logging in user {0}...", loginRequest.UserName);
 
@@ -61,7 +61,7 @@ public sealed class AuthController : ControllerBase
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Register([FromBody] UserRegisterDto registerRequest)
+    public async Task<IActionResult> Register([FromBody] UserRegisterRequest registerRequest)
     {
         _logger.LogInformation("Registering user {0}...", registerRequest.UserName);
 
