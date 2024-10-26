@@ -41,38 +41,7 @@ public class Startup
             options.RespectBrowserAcceptHeader = false;
         });
 
-
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
-        {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "BookPricesJob.API", Version = "v1" });
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-            {
-                In = ParameterLocation.Header,
-                Description = "Please enter token",
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                BearerFormat = "JWT",
-                Scheme = "bearer"
-            });
-
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type=ReferenceType.SecurityScheme,
-                            Id="Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
-
-        });
+        AddSwagger(services);
 
         services.AddResponseCaching();
 
@@ -87,6 +56,34 @@ public class Startup
                 EnvironmentHelper.GetConnectionString(),
                 mysqlServerVersion, b => b.EnableRetryOnFailure()));
 
+        AddAuthentication(services);
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IJobService, JobService>();
+
+    }
+
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (env.IsDevelopment())
+        {
+            app.UseDeveloperExceptionPage();
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
+        app.UseHttpsRedirection();
+
+        app.UseRouting();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+        });
+        app.UseResponseCaching();
+    }
+
+    private void AddAuthentication(IServiceCollection services)
+    {
         services.AddHttpContextAccessor();
         services.AddScoped<UserManager<ApiUser>>();
         services.AddScoped<SignInManager<ApiUser>>();
@@ -126,29 +123,41 @@ public class Startup
             options.AddPolicy(Constant.JobRunnerPolicy, policy => policy.RequireRole(Constant.JobRunnerClaim));
         });
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddScoped<IJobService, JobService>();
         services.AddScoped<ITokenService, TokenService>(
             x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    private void AddSwagger(IServiceCollection services)
     {
-        if (env.IsDevelopment())
+        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(options =>
         {
-            app.UseDeveloperExceptionPage();
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-        app.UseHttpsRedirection();
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "BookPricesJob.API", Version = "v1" });
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
+            });
 
-        app.UseRouting();
-        app.UseAuthentication();
-        app.UseAuthorization();
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type=ReferenceType.SecurityScheme,
+                            Id="Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
         });
-        app.UseResponseCaching();
     }
 }
