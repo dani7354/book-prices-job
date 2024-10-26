@@ -3,7 +3,6 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -16,7 +15,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     private readonly ILogger<JobController> _logger = logger;
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<IList<JobListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {
@@ -27,6 +26,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<JobDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] string id)
@@ -59,6 +59,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateFull(
@@ -82,6 +83,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     }
 
     [HttpPatch("{id}")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdatePartial(
@@ -108,6 +110,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {

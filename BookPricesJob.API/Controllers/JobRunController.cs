@@ -17,6 +17,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     private readonly ILogger<JobRunController> _logger = logger;
 
     [HttpGet]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<IList<JobRunListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> JobRuns(
         [FromQuery] int? limit = null,
@@ -36,6 +37,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     }
 
     [HttpGet("{id}")]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<JobRunDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> JobRun([FromRoute] string id)
@@ -54,6 +56,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     }
 
     [HttpPost]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<JobRunDto>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateJobRun([FromBody] CreateJobRunDto jobRunDto)
@@ -75,6 +78,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     }
 
     [HttpPut("{id}")]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateJobRunFull(
@@ -98,6 +102,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     }
 
     [HttpPatch("{id}")]
+    [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateJobRunPartial(
@@ -129,6 +134,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> DeleteJobRun([FromRoute] string id)
     {
