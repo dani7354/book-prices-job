@@ -5,25 +5,25 @@ namespace BookPricesJob.API.Mapper;
 
 public static class JobMapper
 {
-    public static Job MapToDomain(CreateJobRequest jobDto)
+    public static Job MapToDomain(CreateJobRequest createRequest)
     {
         return new Job(
             Id: null,
-            IsActive: jobDto.IsActive,
-            Name: jobDto.Name,
-            Description: jobDto.Description,
+            IsActive: createRequest.IsActive,
+            Name: createRequest.Name,
+            Description: createRequest.Description,
             Created: null,
             JobRuns: []
         );
     }
 
-    public static Job MapToDomain(UpdateJobFullRequest jobDto, Job job)
+    public static Job MapToDomain(UpdateJobFullRequest updateRequest, Job job)
     {
         return new Job(
             Id: job.Id,
-            IsActive: jobDto.IsActive,
-            Name: jobDto.Name,
-            Description: jobDto.Description,
+            IsActive: updateRequest.IsActive,
+            Name: updateRequest.Name,
+            Description: updateRequest.Description,
             Created: job.Created,
             JobRuns: job.JobRuns
         );
