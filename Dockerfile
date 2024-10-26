@@ -9,7 +9,7 @@ COPY BookPricesJob.API/BookPricesJob.API.csproj BookPricesJob.API/
 COPY BookPricesJob.Common/BookPricesJob.Common.csproj BookPricesJob.Common/
 COPY BookPricesJob.Data/BookPricesJob.Data.csproj BookPricesJob.Data/
 COPY BookPricesJob.Application/BookPricesJob.Application.csproj BookPricesJob.Application/
-RUN dotnet restore
+RUN dotnet restore BookPricesJob.API/BookPricesJob.API.csproj
 
 COPY . .
 WORKDIR /src/BookPricesJob.API
