@@ -25,4 +25,4 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64,linux/arm64/v8
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.WEB_DOCKER_IMAGE_NAME }}:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
