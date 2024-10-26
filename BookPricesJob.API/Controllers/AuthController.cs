@@ -71,7 +71,7 @@ public sealed class AuthController : ControllerBase
         var user = new ApiUser
         {
             Id = Guid.NewGuid().ToString(),
-            UserName = registerRequest.UserName
+            UserName = registerRequest.UserName,
         };
 
         var result = await _userManager.CreateAsync(user, registerRequest.Password);

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -13,6 +14,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     private readonly ILogger<JobController> _logger = logger;
 
     [HttpGet]
+    [Authorize]
     [ProducesResponseType<IList<JobListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll()
     {

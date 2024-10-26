@@ -129,7 +129,8 @@ public class Startup
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
-        services.AddScoped<ITokenService, TokenService>(x => new TokenService(jwtSigningKey));
+        services.AddScoped<ITokenService, TokenService>(
+            x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
