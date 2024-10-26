@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;

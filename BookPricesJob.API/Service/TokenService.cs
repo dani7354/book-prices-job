@@ -31,6 +31,11 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.UniqueName, userName)
         };
 
+        claims.AddRange(
+            user.UserClaims
+                .Where(uc => uc.ClaimType != null && uc.ClaimValue != null)
+                .Select(uc => new Claim(uc.ClaimType!, uc.ClaimValue!)));
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSigningKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
         var tokenDescriptor = new SecurityTokenDescriptor

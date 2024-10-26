@@ -3,6 +3,7 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -40,6 +41,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     }
 
     [HttpPost]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType<JobDto>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateJobDto jobCreateRequest)

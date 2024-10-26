@@ -67,11 +67,21 @@ public sealed class AuthController : ControllerBase
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
+        var userId = Guid.NewGuid().ToString();
 
         var user = new ApiUser
         {
-            Id = Guid.NewGuid().ToString(),
+            Id = userId,
             UserName = registerRequest.UserName,
+            UserClaims = new List<ApiUserClaim>
+            {
+                new ApiUserClaim
+                {
+                    UserId = userId,
+                    ClaimType = "role",
+                    ClaimValue = Constant.JobManagerClaim
+                }
+            }
         };
 
         var result = await _userManager.CreateAsync(user, registerRequest.Password);

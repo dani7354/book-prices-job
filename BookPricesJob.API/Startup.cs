@@ -93,11 +93,11 @@ public class Startup
         services.AddIdentityCore<ApiUser>()
             .AddEntityFrameworkStores<IdentityDatabaseContext>();
 
-        var jwtIssuer = Configuration.GetValue<string>(Constant.JwtIssuer)??
+        var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer)??
             throw new Exception("JWT issuer is missing");
-        var jwtAudience = Configuration.GetValue<string>(Constant.JwtAudience) ??
+        var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ??
             throw new Exception("JWT audience is missing");
-        var jwtSigningKey = Configuration.GetValue<string>(Constant.JwtSigningKey) ??
+        var jwtSigningKey = Configuration.GetValue<string>(Data.Constant.JwtSigningKey) ??
             throw new Exception("JWT signing key is missing");
 
         services.AddAuthentication(options =>
@@ -106,6 +106,7 @@ public class Startup
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
         .AddBearerToken()
+        .AddCookie("Identity.Application")
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
@@ -120,7 +121,10 @@ public class Startup
             };
         });
 
-        services.AddAuthorization();
+        services.AddAuthorization(options => {
+            options.AddPolicy(Constant.JobManagerPolicy, policy => policy.RequireRole(Constant.JobManagerClaim));
+            options.AddPolicy(Constant.JobRunnerPolicy, policy => policy.RequireRole(Constant.JobRunnerClaim));
+        });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
