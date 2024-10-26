@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BookPricesJob.Data.Entity;
 
-public class ApiRole : IdentityRole
+public class ApiUserClaim : IdentityUserClaim<string>
 {
 
 }

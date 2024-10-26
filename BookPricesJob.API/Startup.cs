@@ -1,21 +1,12 @@
-using System;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Application.Service;
 using BookPricesJob.Data.Repository;
 using BookPricesJob.Data;
-using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BookPricesJob.API.Model;
-using BookPricesJob.Common.Domain;
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Net.Mime;
 using BookPricesJob.Data.Entity;
 using Microsoft.AspNetCore.Identity;
@@ -96,7 +87,10 @@ public class Startup
                 EnvironmentHelper.GetConnectionString(),
                 mysqlServerVersion, b => b.EnableRetryOnFailure()));
 
-        services.AddIdentity<ApiUser, IdentityRole>()
+        services.AddHttpContextAccessor();
+        services.AddScoped<UserManager<ApiUser>>();
+        services.AddScoped<SignInManager<ApiUser>>();
+        services.AddIdentityCore<ApiUser>()
             .AddEntityFrameworkStores<IdentityDatabaseContext>();
 
         var jwtIssuer = Configuration.GetValue<string>(Constant.JwtIssuer)??
@@ -111,6 +105,7 @@ public class Startup
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
+        .AddBearerToken()
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters

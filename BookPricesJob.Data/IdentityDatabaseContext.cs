@@ -8,8 +8,7 @@ public class IdentityDatabaseContext : IdentityDbContext<ApiUser>
 {
 
     public DbSet<ApiUser> ApiUser { get; set; }
-    public DbSet<ApiRole> ApiRole { get; set; }
-    public DbSet<ApiRoleClaim> ApiRoleClaim { get; set; }
+    public DbSet<ApiUserClaim> ApiUserClaim { get; set; }
 
     public IdentityDatabaseContext() { }
 

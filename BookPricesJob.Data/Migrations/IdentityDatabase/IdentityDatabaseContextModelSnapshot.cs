@@ -95,11 +95,6 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                         .IsConcurrencyToken()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("varchar(13)");
-
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
@@ -115,13 +110,34 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityRole");
-
-                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -140,35 +156,6 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                         .HasMaxLength(34)
                         .HasColumnType("varchar(34)");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-
-                    b.HasDiscriminator().HasValue("IdentityRoleClaim<string>");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("varchar(255)");
@@ -178,6 +165,10 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                     b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserClaims", (string)null);
+
+                    b.HasDiscriminator().HasValue("IdentityUserClaim<string>");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -236,18 +227,16 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiRole", b =>
+            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiUserClaim", b =>
                 {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRole");
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>");
 
-                    b.HasDiscriminator().HasValue("ApiRole");
-                });
+                    b.Property<string>("ApiUserId")
+                        .HasColumnType("varchar(255)");
 
-            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiRoleClaim", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>");
+                    b.HasIndex("ApiUserId");
 
-                    b.HasDiscriminator().HasValue("ApiRoleClaim");
+                    b.HasDiscriminator().HasValue("ApiUserClaim");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -299,6 +288,18 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiUserClaim", b =>
+                {
+                    b.HasOne("BookPricesJob.Data.Entity.ApiUser", null)
+                        .WithMany("UserClaims")
+                        .HasForeignKey("ApiUserId");
+                });
+
+            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiUser", b =>
+                {
+                    b.Navigation("UserClaims");
                 });
 #pragma warning restore 612, 618
         }

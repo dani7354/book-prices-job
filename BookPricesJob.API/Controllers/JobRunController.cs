@@ -2,10 +2,13 @@ using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookPricesJob.API.Controllers;
 
+[ApiController]
+[Authorize]
 [Route("api/jobruns")]
 public sealed class JobRunController(IJobService jobService, ILogger<JobRunController> logger) : ControllerBase
 {

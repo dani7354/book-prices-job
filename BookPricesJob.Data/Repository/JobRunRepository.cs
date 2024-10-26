@@ -43,6 +43,8 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
         var jobRuns = await query
             .Include(j => j.Arguments)
                 .ThenInclude(x => x.Values)
+            .OrderByDescending(j => j.Priority)
+                .ThenBy(j => j.Updated)
             .ToListAsync();
 
         return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
@@ -54,6 +56,8 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
             .AsNoTracking()
             .Include(j => j.Arguments)
                 .ThenInclude(x => x.Values)
+            .OrderByDescending(j => j.Priority)
+                .ThenBy(j => j.Updated)
             .ToListAsync();
 
         return jobRuns.Select(JobRunMapper.MapToDomain).ToList();

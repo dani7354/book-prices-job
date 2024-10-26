@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace BookPricesJob.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/jobs")]
 public sealed class JobController(IJobService jobService, ILogger<JobController> logger) : ControllerBase
 {
