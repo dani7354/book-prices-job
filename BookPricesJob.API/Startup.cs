@@ -17,6 +17,10 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Net.Mime;
+using BookPricesJob.Data.Entity;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
+using BookPricesJob.API.Service;
 
 
 namespace BookPricesJob.API;
@@ -46,9 +50,38 @@ public class Startup
             options.RespectBrowserAcceptHeader = false;
         });
 
+
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen();
+        services.AddSwaggerGen(options =>
+        {
+            options.SwaggerDoc("v1", new OpenApiInfo { Title = "BookPricesJob.API", Version = "v1" });
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "bearer"
+            });
+
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type=ReferenceType.SecurityScheme,
+                            Id="Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
+
+        });
 
         services.AddResponseCaching();
 
@@ -58,31 +91,45 @@ public class Startup
                 EnvironmentHelper.GetConnectionString(),
                 mysqlServerVersion, b => b.EnableRetryOnFailure()));
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+          services.AddDbContext<IdentityDatabaseContext>(
+            options => options.UseMySql(
+                EnvironmentHelper.GetConnectionString(),
+                mysqlServerVersion, b => b.EnableRetryOnFailure()));
+
+        services.AddIdentity<ApiUser, IdentityRole>()
+            .AddEntityFrameworkStores<IdentityDatabaseContext>();
+
+        var jwtIssuer = Configuration.GetValue<string>(Constant.JwtIssuer)??
+            throw new Exception("JWT issuer is missing");
+        var jwtAudience = Configuration.GetValue<string>(Constant.JwtAudience) ??
+            throw new Exception("JWT audience is missing");
+        var jwtSigningKey = Configuration.GetValue<string>(Constant.JwtSigningKey) ??
+            throw new Exception("JWT signing key is missing");
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration.GetValue<string>(Constant.JwtIssuer),
-                    ValidAudience = Configuration.GetValue<string>(Constant.JwtAudience),
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(Configuration.GetValue<string>(Constant.JwtSigningKey) ?? ""))
-                };
-            });
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtIssuer,
+                ValidAudience = jwtAudience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey))
+            };
+        });
+
+        services.AddAuthorization();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
-
-        var dtoMapper = new MapperConfiguration(cfg =>
-        {
-            cfg.CreateMap<CreateJobDto, Job>();
-            cfg.CreateMap<Job, JobListItemDto>();
-        }).CreateMapper();
-        services.AddSingleton(dtoMapper);
+        services.AddScoped<ITokenService, TokenService>(x => new TokenService(jwtSigningKey));
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

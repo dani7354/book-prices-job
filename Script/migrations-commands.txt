@@ -1,9 +1,9 @@
-# Add new migration and apply
-dotnet ef migrations add <migration name>
-dotnet ef database update
+# Add new migration and apply. Use --context parameter to switch between the two contexts
+dotnet ef migrations add <migration name>  --context DatabaseContext
+dotnet ef database update  --context DatabaseContext
 
 # Remove migration
-dotnet ef migrations remove <migration name>
+dotnet ef migrations remove <migration name> --context <context>
 
 # Drop database
-dotnet ef database drop
+dotnet ef database drop --context <context>

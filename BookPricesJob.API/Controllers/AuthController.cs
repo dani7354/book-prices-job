@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using BookPricesJob.API.Model;
+using BookPricesJob.Data.Entity;
+using BookPricesJob.API.Service;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -9,33 +11,76 @@ namespace BookPricesJob.API.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly ILogger<AuthController> _logger;
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<ApiUser> _userManager;
+    private readonly SignInManager<ApiUser> _signInManager;
+    private readonly ITokenService _tokenService;
 
-    public AuthController(ILogger<AuthController> logger, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+    public AuthController(
+        ILogger<AuthController> logger,
+        UserManager<ApiUser> userManager,
+        SignInManager<ApiUser> signInManager,
+        ITokenService tokenService)
     {
         _logger = logger;
         _userManager = userManager;
         _signInManager = signInManager;
+        _tokenService = tokenService;
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequestModel request)
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Login([FromBody] LoginRequestModel loginRequest)
     {
+        _logger.LogInformation("Logging in user {0}...", loginRequest.UserName);
+
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var email = request.Email!;
-        var password = request.Password!;
+        var userName = loginRequest.UserName;
+        var password = loginRequest.Password;
         var result = await _signInManager.PasswordSignInAsync(
-            email,
-            password,
+            userName: userName,
+            password: password,
             isPersistent: false,
             lockoutOnFailure:  false);
+
+
         if (result.Succeeded)
-            return Ok();
+        {
+            _logger.LogInformation("User {0} logged in successfully!", userName);
+            var user = await _userManager.FindByNameAsync(userName);
+
+            return Ok(_tokenService.CreateToken(user!));
+        }
 
         return Unauthorized();
+    }
 
+
+    [HttpPost("register")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] UserRegisterDto registerRequest)
+    {
+        _logger.LogInformation("Registering user {0}...", registerRequest.UserName);
+
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var user = new ApiUser
+        {
+            Id = Guid.NewGuid().ToString(),
+            UserName = registerRequest.UserName
+        };
+
+        var result = await _userManager.CreateAsync(user, registerRequest.Password);
+        if (result.Succeeded)
+        {
+            _logger.LogInformation("User {0} registered successfully!", registerRequest.UserName);
+            return Ok();
+        }
+
+        return BadRequest(result.Errors);
     }
 }

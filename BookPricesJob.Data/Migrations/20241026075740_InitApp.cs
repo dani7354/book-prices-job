@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BookPricesJob.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitApp : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -45,6 +45,8 @@ namespace BookPricesJob.Data.Migrations
                     Created = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Updated = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Status = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Priority = table.Column<string>(type: "varchar(32)", maxLength: 32, nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     ErrorMessage = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
