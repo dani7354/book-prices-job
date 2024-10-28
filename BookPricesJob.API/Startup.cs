@@ -62,7 +62,7 @@ public class Startup
 
     }
 
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -91,11 +91,11 @@ public class Startup
             .AddEntityFrameworkStores<IdentityDatabaseContext>();
 
         var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer)??
-            throw new Exception("JWT issuer is missing");
+            throw new KeyNotFoundException("JWT issuer is missing");
         var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ??
-            throw new Exception("JWT audience is missing");
+            throw new KeyNotFoundException("JWT audience is missing");
         var jwtSigningKey = Configuration.GetValue<string>(Data.Constant.JwtSigningKey) ??
-            throw new Exception("JWT signing key is missing");
+            throw new KeyNotFoundException("JWT signing key is missing");
 
         services.AddAuthentication(options =>
         {

@@ -1,6 +1,6 @@
 namespace BookPricesJob.Data;
 
-public class EnvironmentHelper
+public static class EnvironmentHelper
 {
     public static void LoadEnvFile()
     {
