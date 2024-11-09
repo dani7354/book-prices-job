@@ -1,5 +1,5 @@
 namespace BookPricesJob.Common.Exception;
 
-public class JobNotFoundException(string jobId) : System.Exception($"Job with id {jobId} not found!")
+public class JobNotFoundException(string id) : System.Exception($"Job with id {id} not found!")
 {
 }

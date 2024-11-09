@@ -1,5 +1,6 @@
 namespace BookPricesJob.Common.Exception;
 
-public class UpdateFailedException(string message) : System.Exception(message)
+public class UpdateFailedException(string id, string? message = null)
+    : System.Exception($"Update failed for ressource with id {id}! {message}")
 {
 }

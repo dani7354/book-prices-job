@@ -23,9 +23,9 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
     {
         var jobEntity = await _dbContext.Job
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id) ??
+                throw new JobNotFoundException(id: id);
 
-        if (jobEntity is null) return;
         _dbContext.Job.Remove(jobEntity);
     }
 
@@ -76,6 +76,5 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         {
             throw new UpdateFailedException(e.Message);
         }
-
     }
 }

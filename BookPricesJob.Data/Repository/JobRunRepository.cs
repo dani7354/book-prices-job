@@ -22,9 +22,9 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
     {
         var jobRunEntity = await _dbContext.JobRun
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id) ??
+                throw new JobRunNotFoundException(id: id);
 
-        if (jobRunEntity is null) return;
         _dbContext.JobRun.Remove(jobRunEntity);
     }
 

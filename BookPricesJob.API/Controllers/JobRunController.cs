@@ -2,6 +2,7 @@ using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
+using BookPricesJob.Common.Exception;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,14 +42,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> JobRun([FromRoute] string id)
     {
-        var jobRun = await _jobService.GetJobRunById(id);
-        if (jobRun is null)
-            return NotFound($"JobRun with id {id} not found!");
+        var jobRun = await _jobService.GetJobRunById(id) ??
+            throw new JobRunNotFoundException(id: id);
 
-        var job = await _jobService.GetJobById(jobRun.JobId);
-        if (job is null)
-            return NotFound($"Could not find related Job with id {jobRun.JobId} for JobRun!");
-
+        var job = await _jobService.GetJobById(jobRun.JobId) ??
+            throw new JobNotFoundException(id: jobRun.JobId);
         var jobRunDto = JobRunMapper.MapToDto(jobRun, job.Name);
 
         return Ok(jobRunDto);
@@ -65,11 +63,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
 
         jobRun = await _jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
-            return BadRequest($"JobRun was not created!");
+            throw new JobRunNotFoundException(id: jobRunId);
 
         var job = await _jobService.GetJobById(jobRun.JobId);
         if (job is null)
-            return BadRequest($"Related Job with {jobRun.JobId} not found!");
+            throw new JobNotFoundException(id: jobRun.JobId);
 
         var jobRunResponseDto = JobRunMapper.MapToDto(jobRun, job.Name);
 
@@ -85,14 +83,14 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         [FromBody] UpdateJobRunFullRequest updateJobRunRequest)
     {
         if (id != updateJobRunRequest.JobRunId)
-            return BadRequest("JobRunIds do not match!");
+            throw new UpdateFailedException(id: id);
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         var jobRun = await _jobService.GetJobRunById(id);
         if (jobRun is null)
-            return BadRequest($"JobRun with id {id} not found!");
+            throw new JobRunNotFoundException(id: id);
 
         var updatedJobRun = JobRunMapper.MapToDomain(
             updateJobRunRequest,
@@ -112,13 +110,12 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         [FromBody] UpdateJobRunPartialRequest updateJobRunRequest)
     {
         if (id == updateJobRunRequest.JobRunId)
-            return BadRequest("JobRunIds do not match!");
+            throw new UpdateFailedException(id: id);
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jobRun = await _jobService.GetJobRunById(id);
-        if (jobRun is null)
-            return BadRequest($"JobRun with id {id} not found!");
+        var jobRun = await _jobService.GetJobRunById(id) ??
+            throw new JobRunNotFoundException(id: id);
 
         if (updateJobRunRequest.ErrorMessage is not null)
             jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };

@@ -3,6 +3,7 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
 using Microsoft.AspNetCore.Authorization;
+using BookPricesJob.Common.Exception;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -31,9 +32,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] string id)
     {
-        var job = await _jobService.GetJobById(id);
-        if (job is null)
-            return NotFound();
+        var job = await _jobService.GetJobById(id) ??
+            throw new JobNotFoundException(id: id);
 
         var jobDto = JobMapper.MapToDto(job);
 
@@ -49,9 +49,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
 
-        job = await _jobService.GetJobById(jobId);
-        if (job is null)
-            return BadRequest($"Job with id {jobId} not created!");
+        job = await _jobService.GetJobById(jobId) ??
+            throw new JobNotCreatedException(message: null);
 
         var jobDto = JobMapper.MapToDto(job);
 
@@ -69,11 +68,10 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         if (id != jobUpdateRequest.Id)
-            return BadRequest();
+            throw new UpdateFailedException(id: id);
 
-        var job = await _jobService.GetJobById(id);
-        if (job is null)
-            return BadRequest();
+        var job = await _jobService.GetJobById(id) ??
+            throw new UpdateFailedException(id: id);
 
         var updatedJob = JobMapper.MapToDomain(jobUpdateRequest, job);
         await _jobService.UpdateJob(updatedJob);
@@ -95,7 +93,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
 
         var job = await _jobService.GetJobById(id);
         if (job is null)
-            return BadRequest();
+            throw new JobRunNotFoundException(id: id);
 
         if (jobUpdateRequest.IsActive.HasValue)
             job = job with { IsActive = jobUpdateRequest.IsActive.Value };
@@ -104,6 +102,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (jobUpdateRequest.Description != null)
             job = job with { Description = jobUpdateRequest.Description };
 
+        _logger.LogInformation("Updating job {Job}...", job);
         await _jobService.UpdateJob(job);
 
         return Ok();
