@@ -1,6 +1,7 @@
 bin/
 obj/
 Docker/
+.vscode/
 
 appsettings.Development.json
 *.env

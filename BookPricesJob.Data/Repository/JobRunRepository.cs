@@ -1,4 +1,5 @@
 using BookPricesJob.Application.Contract;
+using BookPricesJob.Common.Exception;
 using BookPricesJob.Application.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
@@ -76,14 +77,23 @@ public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
 
     public async Task Update(JobRun jobRunDomain)
     {
-        var existingEntity = await _dbContext.JobRun
-            .Include(j => j.Arguments)
-            .FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id) ??
-                throw new KeyNotFoundException($"JobRun with id {jobRunDomain.Id} not found");
+        try
+        {
+            var existingEntity = await _dbContext.JobRun
+                .Include(j => j.Arguments)
+                .FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id)
+                ?? throw new JobRunNotFoundException($"JobRun with id {jobRunDomain.Id} not found");
 
-        _dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
-        var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
+            _dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
+            var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
 
-        _dbContext.JobRun.Update(updatedJobRun);
+            _dbContext.JobRun.Update(updatedJobRun);
+
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            throw new UpdateFailedException(e.Message);
+        }
+
     }
 }

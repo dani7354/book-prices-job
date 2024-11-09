@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
 using BookPricesJob.Data.Mapper;
+using BookPricesJob.Common.Exception;
 
 
 namespace BookPricesJob.Data.Repository;
@@ -64,9 +64,18 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
 
     public async Task Update(Job job)
     {
-        var existingEntity = await _dbContext.Job.FirstOrDefaultAsync(x => x.Id == job.Id);
-        var jobEntity = JobMapper.MapJobToEntity(job, existingEntity);
+        try
+        {
+            var existingEntity = await _dbContext.Job.FirstOrDefaultAsync(x => x.Id == job.Id)
+             ?? throw new JobNotFoundException("Job with id {job.Id} not found!");
+            var jobEntity = JobMapper.MapJobToEntity(job, existingEntity);
 
-        _dbContext.Update(jobEntity);
+            _dbContext.Update(jobEntity);
+        }
+        catch (DbUpdateConcurrencyException e)
+        {
+            throw new UpdateFailedException(e.Message);
+        }
+
     }
 }

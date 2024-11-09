@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
 
@@ -73,7 +71,11 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         await _unitOfWork.Complete();
     }
 
-    public async Task<IList<(JobRun, Job)>> FilterJobRuns(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit)
+    public async Task<IList<(JobRun, Job)>> FilterJobRuns(
+        string? jobId,
+        JobRunStatus? status,
+        JobRunPriority? priority,
+        int? limit)
     {
         var jobRuns = await _unitOfWork.JobRunRepository.FilterBy(jobId, status, priority, limit);
 

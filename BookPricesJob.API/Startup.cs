@@ -12,6 +12,7 @@ using BookPricesJob.Data.Entity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using BookPricesJob.API.Service;
+using BookPricesJob.API.Filter;
 
 
 namespace BookPricesJob.API;
@@ -36,6 +37,8 @@ public class Startup
     {
         services.AddControllers(options =>
         {
+            options.Filters.Add<CustomExceptionFilterAttribute>();
+
             options.Filters.Add(new ProducesAttribute(MediaTypeNames.Application.Json));
             options.Filters.Add(new ConsumesAttribute(MediaTypeNames.Application.Json));
             options.RespectBrowserAcceptHeader = false;
