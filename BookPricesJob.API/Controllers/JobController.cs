@@ -3,7 +3,6 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.API.Model;
 using BookPricesJob.API.Mapper;
 using Microsoft.AspNetCore.Authorization;
-using BookPricesJob.Common.Exception;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -49,6 +48,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     {
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
+        _logger.LogInformation("Job with id {JobRunId} created by {User}", jobId, User.Identity!.Name);
 
         job = await _jobService.GetJobById(jobId);
         if (job is null)
@@ -78,9 +78,9 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
 
         var updatedJob = JobMapper.MapToDomain(jobUpdateRequest, job);
         await _jobService.UpdateJob(updatedJob);
+        _logger.LogInformation("Job with id {JobRunId} updated by {User}", id, User.Identity!.Name);
 
         return Ok();
-
     }
 
     [HttpPatch("{id}")]
@@ -105,8 +105,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (jobUpdateRequest.Description != null)
             job = job with { Description = jobUpdateRequest.Description };
 
-        _logger.LogInformation("Updating job {Job}...", job);
         await _jobService.UpdateJob(job);
+        _logger.LogInformation("Job with id {JobRunId} updated by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
@@ -117,8 +117,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
-        _logger.LogInformation("Deleting job {JobId}...", id);
         await _jobService.DeleteJob(id);
+        _logger.LogInformation("Job with id {JobId} deleted by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
