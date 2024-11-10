@@ -2,7 +2,6 @@ using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
-using BookPricesJob.Common.Exception;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,6 +61,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     {
         var jobRun = JobRunMapper.MapToDomain(createJobRunRequest);
         var jobRunId = await _jobService.CreateJobRun(jobRun);
+        _logger.LogInformation("Job Run created with id {JobRunId}", jobRunId);
 
         jobRun = await _jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
@@ -97,7 +97,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         var updatedJobRun = JobRunMapper.MapToDomain(
             updateJobRunRequest,
             jobRun);
-
+        _logger.LogInformation("Updating JobRun with id {JobRunId}...", id);
         await _jobService.UpdateJobRun(updatedJobRun);
 
         return Ok();
@@ -130,6 +130,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             jobRun = jobRun with { Arguments = updateJobRunRequest.Arguments.Select(
                 x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values)).ToList() };
 
+        _logger.LogInformation("Updating JobRun with id {JobRunId}...", id);
         await _jobService.UpdateJobRun(jobRun);
 
         return Ok();
@@ -141,6 +142,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteJobRun([FromRoute] string id)
     {
+        _logger.LogInformation("Deleting JobRun with id {JobRunId}...", id);
         await _jobService.DeleteJobRun(id);
 
         return Ok();

@@ -1,5 +1,6 @@
 using System.Net;
 using BookPricesJob.Common.Exception;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -24,7 +25,7 @@ public class CustomExceptionFilterAttribute(ILogger<CustomExceptionFilterAttribu
 
         context.Result = new ObjectResult(new ProblemDetails
         {
-            Detail = context.Exception.Message,
+            Title = context.Exception.Message,
             Status = statusCode
         })
         {

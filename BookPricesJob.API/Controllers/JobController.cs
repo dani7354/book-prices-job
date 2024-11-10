@@ -117,6 +117,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
+        _logger.LogInformation("Deleting job {JobId}...", id);
         await _jobService.DeleteJob(id);
 
         return Ok();
