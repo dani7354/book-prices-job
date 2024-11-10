@@ -32,8 +32,9 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromRoute] string id)
     {
-        var job = await _jobService.GetJobById(id) ??
-            throw new JobNotFoundException(id: id);
+        var job = await _jobService.GetJobById(id);
+        if (job is null)
+            return NotFound();
 
         var jobDto = JobMapper.MapToDto(job);
 
@@ -49,8 +50,9 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
 
-        job = await _jobService.GetJobById(jobId) ??
-            throw new JobNotCreatedException(message: null);
+        job = await _jobService.GetJobById(jobId);
+        if (job is null)
+            return BadRequest();
 
         var jobDto = JobMapper.MapToDto(job);
 
@@ -68,10 +70,11 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
         if (id != jobUpdateRequest.Id)
-            throw new UpdateFailedException(id: id);
+            return BadRequest();
 
-        var job = await _jobService.GetJobById(id) ??
-            throw new UpdateFailedException(id: id);
+        var job = await _jobService.GetJobById(id);
+        if (job is null)
+            return NotFound();
 
         var updatedJob = JobMapper.MapToDomain(jobUpdateRequest, job);
         await _jobService.UpdateJob(updatedJob);
@@ -93,7 +96,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
 
         var job = await _jobService.GetJobById(id);
         if (job is null)
-            throw new JobRunNotFoundException(id: id);
+            return NotFound();
 
         if (jobUpdateRequest.IsActive.HasValue)
             job = job with { IsActive = jobUpdateRequest.IsActive.Value };
@@ -111,6 +114,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [HttpDelete("{id}")]
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         await _jobService.DeleteJob(id);

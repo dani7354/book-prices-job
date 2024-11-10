@@ -3,6 +3,7 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
 using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Exception;
+using MySqlConnector;
 
 
 namespace BookPricesJob.Data.Repository;
@@ -13,53 +14,88 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
 
     public async Task<string> Add(Job job)
     {
-        var jobEntity = JobMapper.MapJobToEntity(job);
-        await _dbContext.AddAsync(jobEntity);
+        try
+        {
+            var jobEntity = JobMapper.MapJobToEntity(job);
+            await _dbContext.AddAsync(jobEntity);
 
-        return jobEntity.Id.ToString();
+            return jobEntity.Id.ToString();
+        }
+        catch (MySqlException e)
+        {
+            throw new DatabaseException(e);
+        }
     }
 
     public async Task Delete(string id)
     {
-        var jobEntity = await _dbContext.Job
+        try
+        {
+            var jobEntity = await _dbContext.Job
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id) ??
-                throw new JobNotFoundException(id: id);
+                throw new NotFoundException(id: id);
 
-        _dbContext.Job.Remove(jobEntity);
+            _dbContext.Job.Remove(jobEntity);
+        }
+        catch (MySqlException e)
+        {
+            throw new DatabaseException(e);
+        }
     }
 
     public async Task<IList<Job>> GetAll()
     {
-        var jobEntities = await _dbContext.Job
-            .AsNoTracking()
-            .Include(j => j.JobRuns)
-                .ThenInclude(x => x.Arguments)
-            .ToListAsync();
+        try
+        {
+            var jobEntities = await _dbContext.Job
+                .AsNoTracking()
+                .Include(j => j.JobRuns)
+                    .ThenInclude(x => x.Arguments)
+                .ToListAsync();
 
-        return jobEntities.Select(JobMapper.MapJobToDomain).ToList();
+            return jobEntities.Select(JobMapper.MapJobToDomain).ToList();
+        }
+        catch (MySqlException e)
+        {
+            throw new DatabaseException(e);
+        }
     }
 
     public async Task<Job?> GetById(string id)
     {
-        var jobEntity = await _dbContext.Job
-            .AsNoTracking()
-            .Include(j => j.JobRuns)
-                .ThenInclude(x => x.Arguments)
-            .FirstOrDefaultAsync(j => j.Id == id);
+        try
+        {
+            var jobEntity = await _dbContext.Job
+                .AsNoTracking()
+                .Include(j => j.JobRuns)
+                    .ThenInclude(x => x.Arguments)
+                .FirstOrDefaultAsync(j => j.Id == id);
 
-        return jobEntity == null ? null : JobMapper.MapJobToDomain(jobEntity);
+            return jobEntity == null ? null : JobMapper.MapJobToDomain(jobEntity);
+        }
+        catch (MySqlException e)
+        {
+            throw new DatabaseException(e);
+        }
     }
 
     public async Task<IList<Job>> GetJobs()
     {
-        var jobs = await _dbContext.Job
-            .AsNoTracking()
-            .Include(j => j.JobRuns)
-                .ThenInclude(x => x.Arguments)
-            .ToListAsync();
+        try
+        {
+            var jobs = await _dbContext.Job
+                .AsNoTracking()
+                .Include(j => j.JobRuns)
+                    .ThenInclude(x => x.Arguments)
+                .ToListAsync();
 
-        return jobs.Select(JobMapper.MapJobToDomain).ToList();
+            return jobs.Select(JobMapper.MapJobToDomain).ToList();
+        }
+        catch (MySqlException e)
+        {
+            throw new DatabaseException(e);
+        }
     }
 
     public async Task Update(Job job)
@@ -67,7 +103,7 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         try
         {
             var existingEntity = await _dbContext.Job.FirstOrDefaultAsync(x => x.Id == job.Id)
-             ?? throw new JobNotFoundException("Job with id {job.Id} not found!");
+             ?? throw new NotFoundException(id: job.Id!);
             var jobEntity = JobMapper.MapJobToEntity(job, existingEntity);
 
             _dbContext.Update(jobEntity);
@@ -75,6 +111,10 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         catch (DbUpdateConcurrencyException e)
         {
             throw new UpdateFailedException(e.Message);
+        }
+        catch (MySqlException e)
+        {
+            throw new DatabaseException(e);
         }
     }
 }

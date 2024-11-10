@@ -51,13 +51,11 @@ public class Startup
         var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
         services.AddDbContext<DatabaseContext>(
             options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(),
-                mysqlServerVersion, b => b.EnableRetryOnFailure()));
+                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
 
           services.AddDbContext<IdentityDatabaseContext>(
             options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(),
-                mysqlServerVersion, b => b.EnableRetryOnFailure()));
+                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
 
         AddAuthentication(services);
         services.AddScoped<IUnitOfWork, UnitOfWork>();

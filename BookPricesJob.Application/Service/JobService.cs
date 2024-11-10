@@ -14,9 +14,9 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
         return await _unitOfWork.JobRepository.GetJobs();
     }
 
-    public async Task<Job?> GetJobById(string id)
+    public Task<Job?> GetJobById(string id)
     {
-        return await _unitOfWork.JobRepository.GetById(id);
+        return _unitOfWork.JobRepository.GetById(id);
     }
 
     public async Task<string> CreateJob(Job job)

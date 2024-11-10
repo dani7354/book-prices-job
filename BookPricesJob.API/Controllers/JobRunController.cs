@@ -42,11 +42,13 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> JobRun([FromRoute] string id)
     {
-        var jobRun = await _jobService.GetJobRunById(id) ??
-            throw new JobRunNotFoundException(id: id);
+        var jobRun = await _jobService.GetJobRunById(id);
+        if (jobRun is null)
+            return NotFound(id);
 
-        var job = await _jobService.GetJobById(jobRun.JobId) ??
-            throw new JobNotFoundException(id: jobRun.JobId);
+        var job = await _jobService.GetJobById(jobRun.JobId);
+        if (job is null)
+            return NotFound(jobRun.JobId);
         var jobRunDto = JobRunMapper.MapToDto(jobRun, job.Name);
 
         return Ok(jobRunDto);
@@ -63,11 +65,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
 
         jobRun = await _jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
-            throw new JobRunNotFoundException(id: jobRunId);
+            return BadRequest();
 
         var job = await _jobService.GetJobById(jobRun.JobId);
         if (job is null)
-            throw new JobNotFoundException(id: jobRun.JobId);
+            return BadRequest();
 
         var jobRunResponseDto = JobRunMapper.MapToDto(jobRun, job.Name);
 
@@ -83,14 +85,14 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         [FromBody] UpdateJobRunFullRequest updateJobRunRequest)
     {
         if (id != updateJobRunRequest.JobRunId)
-            throw new UpdateFailedException(id: id);
+            return BadRequest();
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         var jobRun = await _jobService.GetJobRunById(id);
         if (jobRun is null)
-            throw new JobRunNotFoundException(id: id);
+            return BadRequest();
 
         var updatedJobRun = JobRunMapper.MapToDomain(
             updateJobRunRequest,
@@ -110,12 +112,13 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         [FromBody] UpdateJobRunPartialRequest updateJobRunRequest)
     {
         if (id == updateJobRunRequest.JobRunId)
-            throw new UpdateFailedException(id: id);
+            return BadRequest();
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jobRun = await _jobService.GetJobRunById(id) ??
-            throw new JobRunNotFoundException(id: id);
+        var jobRun = await _jobService.GetJobRunById(id);
+        if (jobRun is null)
+            return BadRequest();
 
         if (updateJobRunRequest.ErrorMessage is not null)
             jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };
@@ -135,6 +138,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [HttpDelete("{id}")]
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> DeleteJobRun([FromRoute] string id)
     {
         await _jobService.DeleteJobRun(id);
