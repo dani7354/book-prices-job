@@ -16,5 +16,5 @@ public class Job
     public List<JobRun> JobRuns { get; } = [];
 
     [Timestamp]
-    public byte[] RowVersion { get; set; } = null!;
+    public byte[] RowVersion { get; set; } = [];
 }
