@@ -20,5 +20,5 @@ public class JobRunArgument
     public List<JobRunArgumentValue> Values { get; set; } = [];
 
     [Timestamp]
-    public byte[] RowVersion { get; set; } = null!;
+    public byte[] RowVersion { get; set; } = [];
 }
