@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BookPricesJob.Data.Migrations
 {
-    [DbContext(typeof(DatabaseContext))]
+    [DbContext(typeof(DatabaseContextMysql))]
     partial class DatabaseContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

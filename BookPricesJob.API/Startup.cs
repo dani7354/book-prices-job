@@ -13,14 +13,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using BookPricesJob.API.Service;
 using BookPricesJob.API.Filter;
-
+using BookPricesJob.Application.DatabaseContext;
 
 namespace BookPricesJob.API;
+
 public class Startup
 {
     public Startup(IWebHostEnvironment env)
     {
-        if (env.IsDevelopment())
+
             EnvironmentHelper.LoadEnvFile();
 
         Configuration = new ConfigurationBuilder()
@@ -31,9 +32,9 @@ public class Startup
             .Build();
     }
 
-    public IConfiguration Configuration { get; }
+    public IConfiguration Configuration { get; protected set; }
 
-    public void ConfigureServices(IServiceCollection services)
+    public virtual void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers(options =>
         {
@@ -48,19 +49,11 @@ public class Startup
 
         services.AddResponseCaching();
 
-        var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
-        services.AddDbContext<DatabaseContext>(
-            options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
-
-          services.AddDbContext<IdentityDatabaseContext>(
-            options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+        AddDatabaseContext(services);
 
         AddAuthentication(services);
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
-
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -83,7 +76,7 @@ public class Startup
         app.UseResponseCaching();
     }
 
-    private void AddAuthentication(IServiceCollection services)
+    public virtual void AddAuthentication(IServiceCollection services)
     {
         services.AddHttpContextAccessor();
         services.AddScoped<UserManager<ApiUser>>();
@@ -128,7 +121,19 @@ public class Startup
             x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
     }
 
-    private void AddSwagger(IServiceCollection services)
+    public virtual void AddDatabaseContext(IServiceCollection services)
+    {
+        var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
+        services.AddDbContext<DatabaseContextBase>(
+            options => options.UseMySql(
+                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+
+         services.AddDbContext<IdentityDatabaseContext>(
+            options => options.UseMySql(
+                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+    }
+
+    public virtual void AddSwagger(IServiceCollection services)
     {
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

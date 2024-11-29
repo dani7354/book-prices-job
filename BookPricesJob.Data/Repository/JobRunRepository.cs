@@ -4,12 +4,13 @@ using BookPricesJob.Application.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
+using BookPricesJob.Application.DatabaseContext;
 
 namespace BookPricesJob.Data.Repository;
 
-public class JobRunRepository(DatabaseContext dbContext) : IJobRunRepository
+public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
 {
-    private readonly DatabaseContext _dbContext = dbContext;
+    private readonly DatabaseContextBase _dbContext = dbContext;
 
     public async Task<string> Add(JobRun jobDomain)
     {
