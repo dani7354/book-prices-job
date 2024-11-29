@@ -1,6 +1,4 @@
 
-using BookPricesJob.API;
-using BookPricesJob.Data;
 using BookPricesJob.Test.Setup;
 using Microsoft.AspNetCore.Mvc.Testing;
 
@@ -14,17 +12,10 @@ public class TestJobController : IClassFixture<CustomWebApplicationFactory<Progr
         _factory = factory;
     }
 
-    private static void SetNeededEnvironmentVariables()
-    {
-        Environment.SetEnvironmentVariable(Data.Constant.JwtIssuer, "localhost");
-        Environment.SetEnvironmentVariable(Data.Constant.JwtAudience, "localhost");
-        Environment.SetEnvironmentVariable(Data.Constant.JwtSigningKey, "THISISASECRETKEY");
-    }
-
     [Fact]
     public void GetAllJobs()
     {
-        SetNeededEnvironmentVariables();
+        EnvironmentHelper.SetNecessaryEnvironmentVariables();
         var client = _factory.CreateClient();
 
         var response = client.GetAsync("/api/jobs").Result;

@@ -7,8 +7,8 @@ namespace BookPricesJob.Data;
 public class IdentityDatabaseContext : IdentityDbContext<ApiUser>
 {
 
-    public DbSet<ApiUser> ApiUser { get; set; }
-    public DbSet<ApiUserClaim> ApiUserClaim { get; set; }
+    public DbSet<ApiUser> ApiUser { get; set; } = null!;
+    public DbSet<ApiUserClaim> ApiUserClaim { get; set; } = null!;
 
     public IdentityDatabaseContext() { }
 

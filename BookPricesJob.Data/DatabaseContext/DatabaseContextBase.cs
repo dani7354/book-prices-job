@@ -11,6 +11,5 @@ public class DatabaseContextBase : DbContext
     public virtual DbSet<JobRunArgumentValue> JobRunArgumentValue { get; set; } = null!;
 
     public DatabaseContextBase() { }
-    protected DatabaseContextBase(DbContextOptions options) : base(options) { }
     public DatabaseContextBase(DbContextOptions<DatabaseContextBase> options) : base(options) { }
 }
