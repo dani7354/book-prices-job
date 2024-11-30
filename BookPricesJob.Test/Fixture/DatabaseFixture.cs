@@ -1,6 +1,8 @@
 using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Data.DatabaseContext;
+using BookPricesJob.Data.Entity;
 using BookPricesJob.Test.Setup;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BookPricesJob.Test.Fixture;
@@ -21,11 +23,11 @@ public class DatabaseFixture : IDisposable
         {
             if (disposing)
             {
-                var databaseContext = _factory.Services.GetRequiredService<DatabaseContextBase>();
-                databaseContext.Database.EnsureDeleted();
+                var databaseContext = _factory.Services.GetService<DatabaseContextBase>();
+                databaseContext?.Database.EnsureDeleted();
 
-                var identityDatabaseContext = _factory.Services.GetRequiredService<IdentityDatabaseContextBase>();
-                identityDatabaseContext.Database.EnsureDeleted();
+                var identityDatabaseContext = _factory.Services.GetService<IdentityDatabaseContextBase>();
+                identityDatabaseContext?.Database.EnsureDeleted();
             }
 
             _disposed = true;

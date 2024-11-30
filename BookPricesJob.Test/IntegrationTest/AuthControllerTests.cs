@@ -19,10 +19,10 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
     [Fact]
     public async Task Register_ValidUser_ReturnsSuccess()
     {
-        var password = "SvendsGodePassword123.";
+        var password = "JensGodePassword123.";
         var UserRegisterRequest = new UserRegisterRequest()
         {
-            UserName = "Svend",
+            UserName = "Jens",
             Password = password,
             ConfirmPassword = password
         };

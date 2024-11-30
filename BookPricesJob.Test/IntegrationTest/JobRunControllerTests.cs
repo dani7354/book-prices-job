@@ -19,21 +19,19 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         _client = factory.CreateClient();
     }
 
-    public static IEnumerable<object[]> JobRunStatusesAndPriorities => new List<object[]>
-    {
-        new object[] { JobRunPriority.High, JobRunStatus.Running },
-        new object[] { JobRunPriority.Low, JobRunStatus.Failed },
-        new object[] { JobRunPriority.Normal, JobRunStatus.Completed },
-    };
+    public static IEnumerable<object[]> JobRunStatusesAndPriorities =>
+    [
+        [JobRunPriority.High, JobRunStatus.Running],
+        [JobRunPriority.Low, JobRunStatus.Failed],
+        [JobRunPriority.Normal, JobRunStatus.Completed],
+    ];
 
-    public static IEnumerable<object[]> JobRunArguments => new List<object[]>
-    {
-        new object[]
-        {
+    public static IEnumerable<object[]> JobRunArguments =>
+    [
+        [
             new List<JobRunArgumentDto>()
-        },
-        new object[]
-        {
+        ],
+        [
             new List<JobRunArgumentDto>
             {
                 new() {
@@ -42,9 +40,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
                     Values = ["Value1"]
                 }
             }
-        },
-        new object[]
-        {
+        ],
+        [
             new List<JobRunArgumentDto>
             {
                 new() {
@@ -58,8 +55,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
                     Values = ["Value1"]
                 }
             }
-        },
-    };
+        ],
+    ];
 
     private async Task<JobRunDto> CreateJobWithJobRun(
         JobRunPriority priority = JobRunPriority.Normal)

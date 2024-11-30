@@ -147,6 +147,10 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
+        var jobRun = await _jobService.GetJobRunById(id);
+        if (jobRun is null)
+            return NotFound();
+
         await _jobService.DeleteJobRun(id);
         _logger.LogInformation("JobRun with id {JobRunId} deleted by {User}", id, User.Identity!.Name);
 
