@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using BookPricesJob.API.Service;
 using BookPricesJob.API.Filter;
 using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 
 namespace BookPricesJob.API;
 
@@ -82,7 +83,7 @@ public class Startup
         services.AddScoped<UserManager<ApiUser>>();
         services.AddScoped<SignInManager<ApiUser>>();
         services.AddIdentityCore<ApiUser>()
-            .AddEntityFrameworkStores<IdentityDatabaseContext>();
+            .AddEntityFrameworkStores<IdentityDatabaseContextBase>();
 
         var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer)??
             throw new KeyNotFoundException("JWT issuer is missing");
@@ -128,7 +129,7 @@ public class Startup
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
 
-         services.AddDbContext<IdentityDatabaseContext>(
+         services.AddDbContext<IdentityDatabaseContextMysql>(
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
     }

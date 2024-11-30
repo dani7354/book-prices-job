@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BookPricesJob.Data.Migrations.IdentityDatabase
 {
-    [DbContext(typeof(IdentityDatabaseContext))]
+    [DbContext(typeof(IdentityDatabaseContextMysql))]
     [Migration("20241026101140_InitIdentity")]
     partial class InitIdentity
     {

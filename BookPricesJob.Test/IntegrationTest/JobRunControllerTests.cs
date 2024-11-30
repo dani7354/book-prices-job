@@ -294,7 +294,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     [Fact]
     public async Task Delete_InvalidJobRunId_ReturnsBadRequest()
     {
-        var _ = await CreateJobWithJobRun();
+        await CreateJobWithJobRun();
 
         var responseDeleteJobRun = await _client.DeleteAsync($"{Constant.JobRunsBaseEndpoint}/{Guid.NewGuid()}");
 

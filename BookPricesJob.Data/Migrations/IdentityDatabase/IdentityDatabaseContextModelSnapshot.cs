@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BookPricesJob.Data.Migrations.IdentityDatabase
 {
-    [DbContext(typeof(IdentityDatabaseContext))]
+    [DbContext(typeof(IdentityDatabaseContextMysql))]
     partial class IdentityDatabaseContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

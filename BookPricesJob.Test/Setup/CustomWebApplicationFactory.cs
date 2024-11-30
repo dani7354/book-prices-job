@@ -1,5 +1,6 @@
 using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Data;
+using BookPricesJob.Data.DatabaseContext;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -17,15 +18,16 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll(typeof(DatabaseContextBase));
-            services.RemoveAll(typeof(IdentityDatabaseContext));
+            services.RemoveAll(typeof(IdentityDatabaseContextMysql));
             services.RemoveAll(typeof(DbContextOptions<DatabaseContextBase>));
-            services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContext>));
+            services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContextBase>));
+            services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContextMysql>));
 
             services.AddDbContext<DatabaseContextBase>(
-                options => options.UseInMemoryDatabase("BookPricesJob"), ServiceLifetime.Singleton);
+                options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
-            services.AddDbContext<IdentityDatabaseContext>(
-                options => options.UseInMemoryDatabase("BookPricesJob"), ServiceLifetime.Singleton);
+            services.AddDbContext<IdentityDatabaseContextBase>(
+                options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
             services.AddScoped<IPolicyEvaluator, FakePolicyEvaluator>();
         });

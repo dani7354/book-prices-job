@@ -1,23 +1,20 @@
+using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Data.Entity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data;
 
-public class IdentityDatabaseContext : IdentityDbContext<ApiUser>
+public class IdentityDatabaseContextMysql : IdentityDatabaseContextBase
 {
+    public IdentityDatabaseContextMysql() { }
 
-    public DbSet<ApiUser> ApiUser { get; set; } = null!;
-    public DbSet<ApiUserClaim> ApiUserClaim { get; set; } = null!;
-
-    public IdentityDatabaseContext() { }
-
-    public IdentityDatabaseContext(DbContextOptions<IdentityDatabaseContext> options) : base(options)
+    public IdentityDatabaseContextMysql(DbContextOptions<IdentityDatabaseContextBase> options) : base(options)
     {
         Database.EnsureCreated();
     }
 
-     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         EnvironmentHelper.LoadEnvFile();
         optionsBuilder.UseMySql(

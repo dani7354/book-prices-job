@@ -1,4 +1,5 @@
 using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Test.Setup;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,6 +23,9 @@ public class DatabaseFixture : IDisposable
             {
                 var databaseContext = _factory.Services.GetRequiredService<DatabaseContextBase>();
                 databaseContext.Database.EnsureDeleted();
+
+                var identityDatabaseContext = _factory.Services.GetRequiredService<IdentityDatabaseContextBase>();
+                identityDatabaseContext.Database.EnsureDeleted();
             }
 
             _disposed = true;
