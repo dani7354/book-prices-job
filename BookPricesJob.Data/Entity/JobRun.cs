@@ -27,5 +27,5 @@ public class JobRun
     public List<JobRunArgument> Arguments { get; } = [];
 
     [Timestamp]
-    public byte[] RowVersion { get; set; } = null!;
+    public byte[] RowVersion { get; set; } = [];
 }

@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using BookPricesJob.API.Service;
 using BookPricesJob.API.Filter;
-
+using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 
 namespace BookPricesJob.API;
+
 public class Startup
 {
     public Startup(IWebHostEnvironment env)
@@ -48,19 +50,11 @@ public class Startup
 
         services.AddResponseCaching();
 
-        var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
-        services.AddDbContext<DatabaseContext>(
-            options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
-
-          services.AddDbContext<IdentityDatabaseContext>(
-            options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+        AddDatabaseContext(services);
 
         AddAuthentication(services);
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
-
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -83,13 +77,13 @@ public class Startup
         app.UseResponseCaching();
     }
 
-    private void AddAuthentication(IServiceCollection services)
+    public void AddAuthentication(IServiceCollection services)
     {
         services.AddHttpContextAccessor();
         services.AddScoped<UserManager<ApiUser>>();
         services.AddScoped<SignInManager<ApiUser>>();
         services.AddIdentityCore<ApiUser>()
-            .AddEntityFrameworkStores<IdentityDatabaseContext>();
+            .AddEntityFrameworkStores<IdentityDatabaseContextBase>();
 
         var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer)??
             throw new KeyNotFoundException("JWT issuer is missing");
@@ -128,7 +122,19 @@ public class Startup
             x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
     }
 
-    private void AddSwagger(IServiceCollection services)
+    public void AddDatabaseContext(IServiceCollection services)
+    {
+        var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
+        services.AddDbContext<DatabaseContextBase>(
+            options => options.UseMySql(
+                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+
+         services.AddDbContext<IdentityDatabaseContextBase, IdentityDatabaseContextMysql>(
+            options => options.UseMySql(
+                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+    }
+
+    public void AddSwagger(IServiceCollection services)
     {
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

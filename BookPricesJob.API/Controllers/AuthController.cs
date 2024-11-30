@@ -73,15 +73,6 @@ public sealed class AuthController : ControllerBase
         {
             Id = userId,
             UserName = registerRequest.UserName,
-            UserClaims = new List<ApiUserClaim>
-            {
-                new ApiUserClaim
-                {
-                    UserId = userId,
-                    ClaimType = "role",
-                    ClaimValue = Constant.JobManagerClaim
-                }
-            }
         };
 
         var result = await _userManager.CreateAsync(user, registerRequest.Password);

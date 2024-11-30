@@ -1,22 +1,17 @@
-using Microsoft.EntityFrameworkCore;
+using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Data.Entity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data;
 
-public class DatabaseContext : DbContext
+public class IdentityDatabaseContextMysql : IdentityDatabaseContextBase
 {
-    public DbSet<Job> Job { get; set; }
-    public DbSet<JobRun> JobRun { get; set; }
-    public DbSet<JobRunArgument> JobRunArgument { get; set; }
-    public DbSet<JobRunArgumentValue> JobRunArgumentValue { get; set; }
+    public IdentityDatabaseContextMysql() { }
 
-
-    public DatabaseContext() { }
-
-    public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
+    public IdentityDatabaseContextMysql(DbContextOptions<IdentityDatabaseContextBase> options) : base(options)
     {
-
+        Database.EnsureCreated();
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

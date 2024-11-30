@@ -4,13 +4,14 @@ using BookPricesJob.Common.Domain;
 using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Exception;
 using MySqlConnector;
+using BookPricesJob.Application.DatabaseContext;
 
 
 namespace BookPricesJob.Data.Repository;
 
-public class JobRepository(DatabaseContext dbContext) : IJobRepository
+public class JobRepository(DatabaseContextBase dbContext) : IJobRepository
 {
-    private readonly DatabaseContext _dbContext = dbContext;
+    private readonly DatabaseContextBase _dbContext = dbContext;
 
     public async Task<string> Add(Job job)
     {
@@ -32,8 +33,7 @@ public class JobRepository(DatabaseContext dbContext) : IJobRepository
         try
         {
             var jobEntity = await _dbContext.Job
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id) ??
+                .FirstOrDefaultAsync(x => x.Id == id) ??
                 throw new NotFoundException(id: id);
 
             _dbContext.Job.Remove(jobEntity);
