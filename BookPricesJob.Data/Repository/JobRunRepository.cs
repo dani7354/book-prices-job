@@ -32,7 +32,6 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
         try
         {
             var jobRunEntity = await _dbContext.JobRun
-                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id) ??
                     throw new NotFoundException(id: id);
 

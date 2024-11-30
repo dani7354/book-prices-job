@@ -33,8 +33,7 @@ public class JobRepository(DatabaseContextBase dbContext) : IJobRepository
         try
         {
             var jobEntity = await _dbContext.Job
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == id) ??
+                .FirstOrDefaultAsync(x => x.Id == id) ??
                 throw new NotFoundException(id: id);
 
             _dbContext.Job.Remove(jobEntity);

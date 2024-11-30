@@ -90,6 +90,10 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var job = await _jobService.GetJobById(updateJobRunRequest.JobId);
+        if (job is null)
+            return BadRequest();
+
         var jobRun = await _jobService.GetJobRunById(id);
         if (jobRun is null)
             return BadRequest();
@@ -108,11 +112,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateJobRunPartial(
+    public async Task<IActionResult> UpdatePartial(
         [FromRoute] string id,
         [FromBody] UpdateJobRunPartialRequest updateJobRunRequest)
     {
-        if (id == updateJobRunRequest.JobRunId)
+        if (id != updateJobRunRequest.JobRunId)
             return BadRequest();
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -141,7 +145,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> DeleteJobRun([FromRoute] string id)
+    public async Task<IActionResult> Delete([FromRoute] string id)
     {
         await _jobService.DeleteJobRun(id);
         _logger.LogInformation("JobRun with id {JobRunId} deleted by {User}", id, User.Identity!.Name);

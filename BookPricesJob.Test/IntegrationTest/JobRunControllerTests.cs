@@ -19,11 +19,46 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         _client = factory.CreateClient();
     }
 
-    public static IEnumerable<object[]> JobRunNewStatusesAndPriorities => new List<object[]>
+    public static IEnumerable<object[]> JobRunStatusesAndPriorities => new List<object[]>
     {
         new object[] { JobRunPriority.High, JobRunStatus.Running },
         new object[] { JobRunPriority.Low, JobRunStatus.Failed },
         new object[] { JobRunPriority.Normal, JobRunStatus.Completed },
+    };
+
+    public static IEnumerable<object[]> JobRunArguments => new List<object[]>
+    {
+        new object[]
+        {
+            new List<JobRunArgumentDto>()
+        },
+        new object[]
+        {
+            new List<JobRunArgumentDto>
+            {
+                new() {
+                    Name = "Arg1",
+                    Type = "String",
+                    Values = ["Value1"]
+                }
+            }
+        },
+        new object[]
+        {
+            new List<JobRunArgumentDto>
+            {
+                new() {
+                    Name = "Arg1",
+                    Type = "Integer",
+                    Values = ["1", "500"]
+                },
+                new() {
+                    Name = "Arg2",
+                    Type = "String",
+                    Values = ["Value1"]
+                }
+            }
+        },
     };
 
     private async Task<JobRunDto> CreateJobWithJobRun(
@@ -112,10 +147,12 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     }
 
     [Theory]
-    [MemberData(nameof(JobRunNewStatusesAndPriorities))]
-    public async Task UpdateFull_JobRun_ReturnsSuccessAndUpdatedStatus(JobRunPriority newPriority, JobRunStatus newStatus)
+    [MemberData(nameof(JobRunStatusesAndPriorities))]
+    public async Task UpdateFull_JobRunStatusAndPriority_ReturnsUpdatedStatusAndPriority(
+        JobRunPriority newPriority,
+        JobRunStatus newStatus)
     {
-        var jobRunDto = await this.CreateJobWithJobRun(JobRunPriority.Normal);
+        var jobRunDto = await CreateJobWithJobRun();
 
         var updateJobRunPayload = new UpdateJobRunFullRequest()
         {
@@ -141,5 +178,126 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.NotNull(jobRunUpdated);
         Assert.Equal(newStatus.ToString(), jobRunUpdated.Status);
         Assert.Equal(newPriority.ToString(), jobRunUpdated.Priority);
+    }
+
+    [Theory]
+    [MemberData(nameof(JobRunArguments))]
+    public async Task UpdateFull_JobRunStatusArguments_ReturnsSuccessAndCorrectArguments(
+        List<JobRunArgumentDto> arguments)
+    {
+        var jobRunDto = await CreateJobWithJobRun();
+
+        var updateJobRunPayload = new UpdateJobRunFullRequest()
+        {
+            JobRunId = jobRunDto!.Id,
+            JobId = jobRunDto.JobId,
+            Priority = jobRunDto.Priority,
+            Status = jobRunDto.Status,
+            Arguments = arguments
+        };
+
+        var updateContent = new StringContent(
+            JsonSerializer.Serialize(updateJobRunPayload),
+            Encoding.UTF8,
+            "application/json");
+
+        var responseUpdateJobRun = await _client.PutAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",
+            updateContent);
+
+        var reponseGetJobRunUpdated = await _client.GetAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}");
+        var jobRunUpdated = await reponseGetJobRunUpdated.Content.ReadFromJsonAsync<JobRunDto>();
+
+        Assert.Equal(HttpStatusCode.OK, responseUpdateJobRun.StatusCode);
+        Assert.NotNull(jobRunUpdated);
+        Assert.Equal(arguments.Count, jobRunUpdated.Arguments.Count);
+
+        var firstArgumentOriginal = arguments.FirstOrDefault();
+        if (firstArgumentOriginal is not null)
+        {
+            var firstArgumentUpdated = jobRunUpdated.Arguments.FirstOrDefault();
+            Assert.NotNull(firstArgumentUpdated);
+            Assert.Equal(firstArgumentOriginal.Name, firstArgumentUpdated.Name);
+            Assert.Equal(firstArgumentOriginal.Type, firstArgumentUpdated.Type);
+            Assert.Equal(firstArgumentOriginal.Values, firstArgumentUpdated.Values);
+        }
+    }
+
+    [Fact]
+    public async Task UpdateFull_InvalidJobId_ReturnsBadRequest()
+    {
+        var jobRunDto = await CreateJobWithJobRun();
+
+        var updateJobRunPayload = new UpdateJobRunFullRequest()
+        {
+            JobRunId = jobRunDto!.Id,
+            JobId = Guid.NewGuid().ToString(),
+            Priority = jobRunDto.Priority,
+            Status = jobRunDto.Status
+        };
+
+        var updateContent = new StringContent(
+            JsonSerializer.Serialize(updateJobRunPayload),
+            Encoding.UTF8,
+            "application/json");
+
+        var responseUpdateJobRun = await _client.PutAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",
+            updateContent);
+
+        Assert.Equal(HttpStatusCode.BadRequest, responseUpdateJobRun.StatusCode);
+    }
+
+    [Theory]
+    [MemberData(nameof(JobRunStatusesAndPriorities))]
+    public async Task UpdatePartial_JobRunPriorityAndStatus_ReturnsUpdatedStatusAndPriority(
+        JobRunPriority newPriority,
+        JobRunStatus newStatus)
+    {
+        var jobRunDto = await CreateJobWithJobRun();
+
+        var updateJobRunPayload = new UpdateJobRunPartialRequest()
+        {
+            JobRunId = jobRunDto!.Id,
+            Status = newStatus.ToString(),
+            Priority = newPriority.ToString()
+        };
+
+        var updateContent = new StringContent(
+            JsonSerializer.Serialize(updateJobRunPayload),
+            Encoding.UTF8,
+            "application/json");
+
+        var responseUpdateJobRun = await _client.PatchAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",
+            updateContent);
+
+        var reponseGetJobRunUpdated = await _client.GetAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}");
+        var jobRunUpdated = await reponseGetJobRunUpdated.Content.ReadFromJsonAsync<JobRunDto>();
+
+        Assert.Equal(HttpStatusCode.OK, responseUpdateJobRun.StatusCode);
+        Assert.NotNull(jobRunUpdated);
+        Assert.Equal(newStatus.ToString(), jobRunUpdated.Status);
+        Assert.Equal(newPriority.ToString(), jobRunUpdated.Priority);
+    }
+
+    [Fact]
+    public async Task Delete_JobRun_ReturnsSuccess()
+    {
+        var jobRunDto = await CreateJobWithJobRun();
+
+        var responseDeleteJobRun = await _client.DeleteAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, responseDeleteJobRun.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_InvalidJobRunId_ReturnsBadRequest()
+    {
+        var _ = await CreateJobWithJobRun();
+
+        var responseDeleteJobRun = await _client.DeleteAsync($"{Constant.JobRunsBaseEndpoint}/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, responseDeleteJobRun.StatusCode);
     }
 }
