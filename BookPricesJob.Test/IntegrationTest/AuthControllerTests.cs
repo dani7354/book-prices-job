@@ -7,10 +7,10 @@ using System.Net;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Program>>
+public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
     private readonly HttpClient _client;
-    public AuthControllerTests(CustomWebApplicationFactory<Program> factory) : base(factory)
+    public AuthControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
         _client = factory.CreateClient();

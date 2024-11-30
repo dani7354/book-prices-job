@@ -11,8 +11,8 @@ public class DatabaseFixture : IDisposable
 {
 
     private bool _disposed = false;
-    private readonly CustomWebApplicationFactory<Program> _factory;
-    public DatabaseFixture(CustomWebApplicationFactory<Program> factory)
+    private readonly CustomWebApplicationFactory<Startup> _factory;
+    public DatabaseFixture(CustomWebApplicationFactory<Startup> factory)
     {
         _factory = factory;
     }

@@ -5,11 +5,11 @@ using BookPricesJob.Test.Setup;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class JobControllerTests : IClassFixture<CustomWebApplicationFactory<Program>>
+public class JobControllerTests : IClassFixture<CustomWebApplicationFactory<Startup>>
 {
-    private readonly CustomWebApplicationFactory<Program> _factory;
+    private readonly CustomWebApplicationFactory<Startup> _factory;
 
-    public JobControllerTests(CustomWebApplicationFactory<Program> factory)
+    public JobControllerTests(CustomWebApplicationFactory<Startup> factory)
     {
         _factory = factory;
     }

@@ -9,11 +9,11 @@ using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Program>>
+public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
     private readonly HttpClient _client;
 
-    public JobRunControllerTests(CustomWebApplicationFactory<Program> factory) : base(factory)
+    public JobRunControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
         _client = factory.CreateClient();
