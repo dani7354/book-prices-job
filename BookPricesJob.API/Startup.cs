@@ -35,7 +35,7 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
-    public virtual void ConfigureServices(IServiceCollection services)
+    public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers(options =>
         {
@@ -77,7 +77,7 @@ public class Startup
         app.UseResponseCaching();
     }
 
-    public virtual void AddAuthentication(IServiceCollection services)
+    public void AddAuthentication(IServiceCollection services)
     {
         services.AddHttpContextAccessor();
         services.AddScoped<UserManager<ApiUser>>();
@@ -122,7 +122,7 @@ public class Startup
             x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
     }
 
-    public virtual void AddDatabaseContext(IServiceCollection services)
+    public void AddDatabaseContext(IServiceCollection services)
     {
         var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
         services.AddDbContext<DatabaseContextBase>(
@@ -134,7 +134,7 @@ public class Startup
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
     }
 
-    public virtual void AddSwagger(IServiceCollection services)
+    public void AddSwagger(IServiceCollection services)
     {
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
