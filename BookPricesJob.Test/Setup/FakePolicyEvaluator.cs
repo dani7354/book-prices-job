@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 
+
 namespace BookPricesJob.Test.Setup;
 
 public class FakePolicyEvaluator : IPolicyEvaluator
@@ -14,8 +15,8 @@ public class FakePolicyEvaluator : IPolicyEvaluator
         principal.AddIdentity(
             new ClaimsIdentity(
                 [
-                    new Claim(ClaimTypes.Role, Constant.JobManagerClaim),
-                    new Claim(ClaimTypes.Role, Constant.JobRunnerClaim),
+                    new Claim(ClaimTypes.Role, API.Constant.JobManagerClaim),
+                    new Claim(ClaimTypes.Role, API.Constant.JobRunnerClaim),
                 ], "FakeScheme"));
 
         return Task.FromResult(

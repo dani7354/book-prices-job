@@ -17,7 +17,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [HttpGet]
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<IList<JobListItemDto>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> Jobs()
     {
         var jobs =  await _jobService.GetJobs();
         var jobDtos = JobMapper.MapToList(jobs);
@@ -29,7 +29,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<JobDto>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Get([FromRoute] string id)
+    public async Task<IActionResult> Job([FromRoute] string id)
     {
         var job = await _jobService.GetJobById(id);
         if (job is null)
@@ -56,7 +56,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
 
         var jobDto = JobMapper.MapToDto(job);
 
-        return CreatedAtAction(nameof(Get), new { id = jobId }, jobDto);
+        return CreatedAtAction(nameof(Job), new { id = jobId }, jobDto);
     }
 
     [HttpPut("{id}")]

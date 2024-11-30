@@ -34,6 +34,7 @@ public static class JobRunMapper
         jobRunEntity.Id = jobRunDomain.Id!;
         jobRunEntity.JobId = jobRunDomain.JobId;
         jobRunEntity.Status = jobRunDomain.Status.ToString();
+        jobRunEntity.Priority = jobRunDomain.Priority.ToString();
         jobRunEntity.Updated = DateTime.UtcNow;
         jobRunEntity.ErrorMessage = jobRunDomain.ErrorMessage;
 

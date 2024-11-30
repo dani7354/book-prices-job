@@ -80,7 +80,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> UpdateJobRunFull(
+    public async Task<IActionResult> UpdateFull(
         [FromRoute] string id,
         [FromBody] UpdateJobRunFullRequest updateJobRunRequest)
     {

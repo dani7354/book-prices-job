@@ -1,4 +1,5 @@
 using BookPricesJob.API.Model;
+using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Test.Setup;
 
@@ -10,4 +11,6 @@ public static class TestData
         Description = "Test Job 1 described here",
         IsActive = true
     };
+
+   
 }

@@ -21,12 +21,14 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             services.RemoveAll(typeof(DbContextOptions<DatabaseContextBase>));
             services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContext>));
 
-            services.AddDbContext<DatabaseContextBase>(options => options.UseInMemoryDatabase("BookPricesJob"));
-            services.AddDbContext<IdentityDatabaseContext>(options => options.UseInMemoryDatabase("BookPricesJobAuth"));
+            services.AddDbContext<DatabaseContextBase>(
+                options => options.UseInMemoryDatabase("BookPricesJob"), ServiceLifetime.Singleton);
+
+            services.AddDbContext<IdentityDatabaseContext>(
+                options => options.UseInMemoryDatabase("BookPricesJob"), ServiceLifetime.Singleton);
 
             services.AddScoped<IPolicyEvaluator, FakePolicyEvaluator>();
         });
-
 
         builder.UseEnvironment("Development");
     }

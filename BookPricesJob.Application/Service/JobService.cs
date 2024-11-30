@@ -87,7 +87,10 @@ public class JobService(IUnitOfWork unitOfWork) : IJobService
                 jobsForJobRuns.Add(id, job);
         }
 
-        return jobRuns.Select(x => (x, jobsForJobRuns[x.JobId])).ToList();
+        return jobRuns
+            .Where(x => jobsForJobRuns.ContainsKey(x.JobId))
+            .Select(x => (x, jobsForJobRuns[x.JobId]))
+            .ToList();
     }
 
     #endregion
