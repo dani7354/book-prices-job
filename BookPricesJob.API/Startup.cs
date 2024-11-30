@@ -22,7 +22,7 @@ public class Startup
 {
     public Startup(IWebHostEnvironment env)
     {
-
+        if (env.IsDevelopment())
             EnvironmentHelper.LoadEnvFile();
 
         Configuration = new ConfigurationBuilder()
@@ -33,7 +33,7 @@ public class Startup
             .Build();
     }
 
-    public IConfiguration Configuration { get; protected set; }
+    public IConfiguration Configuration { get; }
 
     public virtual void ConfigureServices(IServiceCollection services)
     {
@@ -129,7 +129,7 @@ public class Startup
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
 
-         services.AddDbContext<IdentityDatabaseContextMysql>(
+         services.AddDbContext<IdentityDatabaseContextBase, IdentityDatabaseContextMysql>(
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
     }
