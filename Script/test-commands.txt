@@ -1,0 +1,8 @@
+# Run all
+dotnet test
+
+# List tests
+dotnet test --list-tests
+
+# Run selected
+dotnet test  --filter "FullyQualifiedName~BookPricesJob.Test.IntegrationTest"
