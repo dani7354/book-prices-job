@@ -5,19 +5,16 @@ using System.Text.Json;
 using BookPricesJob.API.Model;
 using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
-using Newtonsoft.Json.Linq;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
 public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
     private readonly HttpClient _client;
 
     public JobControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
-        _factory = factory;
         _client = factory.CreateClient();
     }
 
@@ -190,5 +187,26 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
         var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job!.Id}", content);
 
         Assert.Equal(HttpStatusCode.OK, responseUpdateJob.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_ExistingJob_ReturnsSuccess()
+    {
+        var jobPayload = TestData.CreateJobRequestOne;
+
+        var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
+        var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var responseDeleteJob = await _client.DeleteAsync($"{Constant.JobsBaseEndpoint}/{job!.Id}");
+
+        Assert.Equal(HttpStatusCode.OK, responseDeleteJob.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_NoJobs_ReturnsNotFound()
+    {
+        var responseDeleteJob = await _client.DeleteAsync($"{Constant.JobsBaseEndpoint}/{Guid.NewGuid()}");
+
+        Assert.Equal(HttpStatusCode.NotFound, responseDeleteJob.StatusCode);
     }
 }
