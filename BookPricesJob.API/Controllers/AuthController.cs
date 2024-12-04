@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using BookPricesJob.API.Model;
 using BookPricesJob.Data.Entity;
 using BookPricesJob.API.Service;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -14,17 +15,20 @@ public sealed class AuthController : ControllerBase
     private readonly UserManager<ApiUser> _userManager;
     private readonly SignInManager<ApiUser> _signInManager;
     private readonly ITokenService _tokenService;
+    private readonly IConfiguration _configuration;
 
     public AuthController(
         ILogger<AuthController> logger,
         UserManager<ApiUser> userManager,
         SignInManager<ApiUser> signInManager,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IConfiguration configuration)
     {
         _logger = logger;
         _userManager = userManager;
         _signInManager = signInManager;
         _tokenService = tokenService;
+        _configuration = configuration;
     }
 
     [HttpPost("login")]
@@ -59,10 +63,17 @@ public sealed class AuthController : ControllerBase
 
 
     [HttpPost("register")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest registerRequest)
     {
+        if (!_configuration.GetValue<bool>(Constant.AllowNewUsers))
+        {
+            _logger.LogInformation("Registering new users is not allowed");
+            return BadRequest("Registering new users is not allowed");
+        }
+
         _logger.LogInformation("Registering user {0}...", registerRequest.UserName);
 
         if (!ModelState.IsValid)
