@@ -15,7 +15,43 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
 
     public async Task<IList<Job>> GetJobs()
     {
-        return await _unitOfWork.JobRepository.GetJobs();
+        var jobIdListCacheKey = CacheKeyGenerator.GenerateJobListKey();
+        var jobIds = await _cache.GetAsync<IList<string>>(jobIdListCacheKey);
+        if (jobIds is not null)
+            return await GetJobsByIds(jobIds);
+
+        var jobsFromRepository = await _unitOfWork.JobRepository.GetJobs();
+        if (jobsFromRepository.Count > 0)
+            await SetJobsInCache(jobsFromRepository);
+
+        return jobsFromRepository;
+    }
+
+    private async Task<IList<Job>> GetJobsByIds(IList<string> jobIds)
+    {
+        var jobs = new List<Job>();
+        foreach (var id in jobIds)
+        {
+            var job = await GetJobById(id);
+            if (job is not null)
+                jobs.Add(job);
+        }
+
+        return jobs;
+    }
+
+    private async Task SetJobsInCache(IList<Job> jobs)
+    {
+        var jobIds = jobs.Select(x => x.Id!).ToList();
+        await _cache.SetAsync(CacheKeyGenerator.GenerateJobListKey(), jobIds, _jobCacheExpiry);
+
+        foreach (var job in jobs)
+        {
+            await _cache.SetAsync(
+                key: CacheKeyGenerator.GenerateJobKey(job.Id!),
+                value: job,
+                expiry: _jobCacheExpiry);
+        }
     }
 
     public async Task<Job?> GetJobById(string id)
@@ -45,6 +81,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _unitOfWork.JobRepository.Delete(id);
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(id));
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
     }
 
     public async Task UpdateJob(Job job)
@@ -52,6 +89,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _unitOfWork.JobRepository.Update(job);
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(job.Id!));
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
     }
     #endregion
 
