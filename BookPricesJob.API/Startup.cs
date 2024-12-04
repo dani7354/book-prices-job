@@ -122,7 +122,7 @@ public class Startup
             x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
     }
 
-    public void AddDatabaseContext(IServiceCollection services)
+    public static void AddDatabaseContext(IServiceCollection services)
     {
         var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
         services.AddDbContext<DatabaseContextBase>(
