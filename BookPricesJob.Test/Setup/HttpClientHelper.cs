@@ -18,4 +18,12 @@ public static class HttpClientHelper
 
         return response;
     }
+
+    public static StringContent CreateStringPayload<T>(T payload)
+    {
+        return new StringContent(
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json");
+    }
 }

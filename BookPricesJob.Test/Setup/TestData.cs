@@ -1,5 +1,4 @@
 using BookPricesJob.API.Model;
-using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Test.Setup;
 
@@ -12,5 +11,5 @@ public static class TestData
         IsActive = true
     };
 
-   
+
 }
