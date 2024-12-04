@@ -95,4 +95,44 @@ public sealed class AuthController : ControllerBase
 
         return BadRequest(result.Errors);
     }
+
+    [HttpPost("addrole")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AddRole([FromBody] AddRoleRequest addRoleRequest)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var user = await _userManager.FindByNameAsync(addRoleRequest.UserName);
+        if (user is null)
+            return BadRequest();
+
+        var validRoles = new HashSet<string> { Constant.JobManagerClaim, Constant.JobRunnerClaim };
+        if (!validRoles.Contains(addRoleRequest.RoleName))
+            return BadRequest($"Invalid role name: {addRoleRequest.RoleName}");
+
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        if (userClaims.Any(x => x.Type == Constant.ClaimRoleType && x.Value == addRoleRequest.RoleName))
+            return BadRequest("User already has this role");
+
+        var claim = new ApiUserClaim()
+        {
+            UserId = user.Id,
+            ClaimType = Constant.ClaimRoleType,
+            ClaimValue = addRoleRequest.RoleName
+        };
+
+        user.UserClaims.Add(claim);
+        var result = await _userManager.UpdateAsync(user);
+
+        if (result.Succeeded)
+        {
+            _logger.LogInformation("Claim added to user {0}", user.UserName);
+            return Ok();
+        }
+
+        return BadRequest(result.Errors);
+    }
 }

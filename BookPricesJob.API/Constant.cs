@@ -2,6 +2,8 @@ namespace BookPricesJob.API;
 
 public static class Constant
 {
+    public const string ClaimRoleType = "role";
+
     // Access Policies
     public const string JobManagerPolicy = "JobManager";
     public const string JobRunnerPolicy = "JobRunner";
