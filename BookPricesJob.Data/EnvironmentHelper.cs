@@ -24,4 +24,12 @@ public static class EnvironmentHelper
 
         return $"server={mysqlServer}; database={mysqlDatabase}; user={mysqlUser}; password={mysqlPassword}";
     }
+
+    public static string GetRedisConnectionString()
+    {
+        var redisHost = Environment.GetEnvironmentVariable(Constant.RedisHost);
+        var redisPort = Environment.GetEnvironmentVariable(Constant.RedisPort);
+
+        return $"{redisHost}:{redisPort}";
+    }
 }

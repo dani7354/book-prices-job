@@ -54,8 +54,12 @@ public sealed class AuthController : ControllerBase
         {
             _logger.LogInformation("User {0} logged in successfully!", userName);
             var user = await _userManager.FindByNameAsync(userName);
+            if (user is null)
+                return BadRequest("An error occurred while logging in!");
 
-            return Ok(_tokenService.CreateToken(user!));
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            return Ok(_tokenService.CreateToken(user, userClaims));
         }
 
         return Unauthorized();
@@ -150,7 +154,8 @@ public sealed class AuthController : ControllerBase
             return BadRequest();
 
         var claims = await _userManager.GetClaimsAsync(user);
-        var claimToRemove = claims.FirstOrDefault(x => x.Type == Constant.ClaimRoleType && x.Value == removeRoleRequest.RoleName);
+        var claimToRemove = claims.FirstOrDefault(
+            x => x.Type == Constant.ClaimRoleType && x.Value == removeRoleRequest.RoleName);
         if (claimToRemove is null)
             return BadRequest("User does not have this role");
 

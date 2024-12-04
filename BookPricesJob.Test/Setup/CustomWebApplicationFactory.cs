@@ -1,3 +1,4 @@
+using BookPricesJob.Application.Contract;
 using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Data;
 using BookPricesJob.Data.DatabaseContext;
@@ -30,6 +31,9 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
             services.AddDbContext<IdentityDatabaseContextBase>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+
+            services.RemoveAll(typeof(ICache));
+            services.AddScoped<ICache, FakeCache>();
 
             services.AddScoped<IPolicyEvaluator, FakePolicyEvaluator>();
             services.AddIdentityCore<ApiUser>()

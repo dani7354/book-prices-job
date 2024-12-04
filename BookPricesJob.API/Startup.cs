@@ -15,6 +15,7 @@ using BookPricesJob.API.Service;
 using BookPricesJob.API.Filter;
 using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Data.DatabaseContext;
+using BookPricesJob.Data.Cache;
 
 namespace BookPricesJob.API;
 
@@ -51,8 +52,9 @@ public class Startup
         services.AddResponseCaching();
 
         AddDatabaseContext(services);
-
+        AddRedisCache(services);
         AddAuthentication(services);
+    
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
     }
@@ -132,6 +134,17 @@ public class Startup
          services.AddDbContext<IdentityDatabaseContextBase, IdentityDatabaseContextMysql>(
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
+    }
+
+    public static void AddRedisCache(IServiceCollection services)
+    {
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = EnvironmentHelper.GetRedisConnectionString();
+            options.InstanceName = "BookPricesJob_";
+        });
+
+        services.AddScoped<ICache, RedisCache>();
     }
 
     public void AddSwagger(IServiceCollection services)

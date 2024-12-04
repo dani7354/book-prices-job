@@ -10,6 +10,13 @@ services:
       - "8080:8080"
     networks:
       - localnetwork
+  redis:
+    image: redis:7.4.1-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - localnetwork
   db:
     image: mysql:8.4.0
     command: --mysql-native-password=ON

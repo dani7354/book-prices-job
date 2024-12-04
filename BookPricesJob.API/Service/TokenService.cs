@@ -20,7 +20,7 @@ public class TokenService : ITokenService
         _tokenIssuer = tokenIssuer;
     }
 
-    public string CreateToken(ApiUser user)
+    public string CreateToken(ApiUser user, IEnumerable<Claim> userClaims)
     {
         var userId = user.Id;
         var userName = user.UserName!;
@@ -31,10 +31,7 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.UniqueName, userName)
         };
 
-        claims.AddRange(
-            user.UserClaims
-                .Where(uc => uc.ClaimType != null && uc.ClaimValue != null)
-                .Select(uc => new Claim(uc.ClaimType!, uc.ClaimValue!)));
+        claims.AddRange(userClaims.Where(uc => uc.Type != null && uc.Value != null));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSigningKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
