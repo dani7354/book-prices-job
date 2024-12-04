@@ -3,9 +3,10 @@ using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Application.Service;
 
-public class JobService(IUnitOfWork unitOfWork) : IJobService
+public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
+    private readonly ICache _cache = cache;
 
     #region Job
 

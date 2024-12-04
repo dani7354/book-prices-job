@@ -134,6 +134,15 @@ public class Startup
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
     }
 
+    public static void AddRedisCache(IServiceCollection services)
+    {
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = EnvironmentHelper.GetRedisConnectionString();
+            options.InstanceName = "BookPricesJob_";
+        });
+    }
+
     public void AddSwagger(IServiceCollection services)
     {
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
