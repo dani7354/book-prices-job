@@ -4,7 +4,6 @@ using BookPricesJob.API.Model;
 using BookPricesJob.Data.Entity;
 using BookPricesJob.API.Service;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 
 namespace BookPricesJob.API.Controllers;
 
