@@ -10,7 +10,6 @@ public static class Constant
     public const string JobManagerClaim = "JobManager";
     public const string JobRunnerClaim = "JobRunner";
 
-
     // Configuration
     public const string AllowNewUsers = "ALLOW_NEW_USERS";
 }
