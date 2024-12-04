@@ -1,7 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using BookPricesJob.API.Model;
 using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
@@ -70,10 +68,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
             IsActive = true
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobPayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobPayload);
 
         var responseCreateJob = await _client.PostAsync(Constant.JobsBaseEndpoint, content);
 
@@ -92,10 +87,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
             IsActive = true
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
 
         var responseCreateJob = await _client.PostAsync(Constant.JobsBaseEndpoint, content);
 
@@ -105,12 +97,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [Fact]
     public async Task UpdateFull_ExistingJob_ReturnsSuccess()
     {
-        var jobPayload = new CreateJobRequest()
-        {
-            Name = "Test Job 1",
-            Description = "Test Job 1 described here",
-            IsActive = true
-        };
+        var jobPayload = TestData.CreateJobRequestOne;
 
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
         var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
@@ -123,11 +110,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
             IsActive = false
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobUpdatePayload),
-            Encoding.UTF8,
-            "application/json");
-
+        var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
         var responseUpdateJob = await _client.PutAsync($"{Constant.JobsBaseEndpoint}/{job.Id}", content);
 
         Assert.Equal(HttpStatusCode.OK, responseUpdateJob.StatusCode);
@@ -136,12 +119,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [Fact]
     public async Task UpdateFull_InvalidJobId_ReturnsBadRequest()
     {
-         var jobPayload = new CreateJobRequest()
-        {
-            Name = "Test Job 1",
-            Description = "Test Job 1 described here",
-            IsActive = true
-        };
+         var jobPayload = TestData.CreateJobRequestOne;
 
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
          var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
@@ -154,10 +132,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
             IsActive = false
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobUpdatePayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
 
         var responseUpdateJob = await _client.PutAsync($"{Constant.JobsBaseEndpoint}/{jobUpdatePayload.Id}", content);
 
@@ -168,21 +143,13 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [MemberData(nameof(PartialUpdateRequests))]
     public async Task UpdatePartial_ExistingJob_ReturnsSuccess(UpdateJobPartialRequest jobUpdatePayload)
     {
-        var jobPayload = new CreateJobRequest()
-        {
-            Name = "Test Job 1",
-            Description = "Test Job 1 described here",
-            IsActive = true
-        };
+        var jobPayload = TestData.CreateJobRequestOne;
 
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
         var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
         jobUpdatePayload.Id = job!.Id;
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobUpdatePayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
 
         var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job!.Id}", content);
 

@@ -1,7 +1,5 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using BookPricesJob.API.Model;
 using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
@@ -71,10 +69,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Priority = priority.ToString()
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
 
         var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
         var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
@@ -111,10 +106,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Priority = JobRunPriority.Normal.ToString()
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
 
         var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
 
@@ -133,10 +125,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Priority = "Normal"
         };
 
-        var content = new StringContent(
-            JsonSerializer.Serialize(jobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
 
         var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
 
@@ -159,10 +148,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Status = newStatus.ToString()
         };
 
-        var updateContent = new StringContent(
-            JsonSerializer.Serialize(updateJobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
 
         var responseUpdateJobRun = await _client.PutAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",
@@ -193,10 +179,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Arguments = arguments
         };
 
-        var updateContent = new StringContent(
-            JsonSerializer.Serialize(updateJobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
 
         var responseUpdateJobRun = await _client.PutAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",
@@ -233,10 +216,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Status = jobRunDto.Status
         };
 
-        var updateContent = new StringContent(
-            JsonSerializer.Serialize(updateJobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
 
         var responseUpdateJobRun = await _client.PutAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",
@@ -260,10 +240,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Priority = newPriority.ToString()
         };
 
-        var updateContent = new StringContent(
-            JsonSerializer.Serialize(updateJobRunPayload),
-            Encoding.UTF8,
-            "application/json");
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
 
         var responseUpdateJobRun = await _client.PatchAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto!.Id}",

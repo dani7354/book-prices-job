@@ -1,8 +1,6 @@
 using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
 using BookPricesJob.API.Model;
-using System.Text.Json;
-using System.Text;
 using System.Net;
 
 namespace BookPricesJob.Test.IntegrationTest;
@@ -27,10 +25,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
             ConfirmPassword = password
         };
 
-        var registerPayload = new StringContent(
-            JsonSerializer.Serialize(UserRegisterRequest),
-            Encoding.UTF8,
-            "application/json");
+        var registerPayload = HttpClientHelper.CreateStringPayload(UserRegisterRequest);
 
         var registerResponse = await _client.PostAsync($"{Constant.AuthBaseEndpoint}/register", registerPayload);
 
@@ -48,23 +43,18 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
             ConfirmPassword = password
         };
 
-        var registerPayload = new StringContent(
-            JsonSerializer.Serialize(UserRegisterRequest),
-            Encoding.UTF8,
-            "application/json");
+        var registerPayload = HttpClientHelper.CreateStringPayload(UserRegisterRequest);
 
         var registerResponse = await _client.PostAsync($"{Constant.AuthBaseEndpoint}/register", registerPayload);
 
         Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
 
-        var loginPayload = new StringContent(
-            JsonSerializer.Serialize(new LoginRequest()
-            {
-                UserName = "Svend",
-                Password = password
-            }),
-            Encoding.UTF8,
-            "application/json");
+        var loginRequest = new LoginRequest()
+        {
+            UserName = "Svend",
+            Password = password
+        };
+        var loginPayload = HttpClientHelper.CreateStringPayload(loginRequest);
 
         var loginResponse = await _client.PostAsync($"{Constant.AuthBaseEndpoint}/login", loginPayload);
 
