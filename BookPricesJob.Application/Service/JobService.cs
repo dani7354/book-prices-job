@@ -93,13 +93,6 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(job.Id!));
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunListKey());
-        await RemoveCachedJobRunsForJob(job);
-    }
-
-    public async Task RemoveCachedJobRunsForJob(Job job)
-    {
-        foreach (var jobRun in job.JobRuns)
-            await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(jobRun.Id!));
     }
 
     #endregion
