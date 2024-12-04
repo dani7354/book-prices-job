@@ -32,7 +32,6 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             services.AddDbContext<IdentityDatabaseContextBase>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
-
             services.RemoveAll(typeof(ICache));
             services.AddScoped<ICache, FakeCache>();
 

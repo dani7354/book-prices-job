@@ -18,13 +18,8 @@ public class UnitOfWork : IUnitOfWork
         JobRepository = new JobRepository(dataContext);
     }
 
-    public async Task<int> Complete()
+    public Task<int> Complete()
     {
-        return await _dataContext.SaveChangesAsync();
-    }
-
-    public async Task Dispose()
-    {
-        await _dataContext.DisposeAsync();
+        return _dataContext.SaveChangesAsync();
     }
 }
