@@ -6,6 +6,8 @@ namespace BookPricesJob.Data.Cache;
 
 public class RedisCache(IDistributedCache distributedCache) : ICache
 {
+    private readonly TimeSpan _defaultExpiry = TimeSpan.FromMinutes(5);
+
     private readonly IDistributedCache _distributedCache = distributedCache;
 
     public async Task<T?> GetAsync<T>(string key)
@@ -19,7 +21,7 @@ public class RedisCache(IDistributedCache distributedCache) : ICache
     {
         var options = new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = expiry
+            AbsoluteExpirationRelativeToNow = expiry ?? _defaultExpiry
         };
         var serializedValue = JsonSerializer.Serialize(value);
 

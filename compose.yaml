@@ -11,7 +11,7 @@ services:
     networks:
       - localnetwork
   redis:
-    image: redis:7.2.5-alpine
+    image: redis:7.4.1-alpine
     restart: always
     ports:
       - "6379:6379"
