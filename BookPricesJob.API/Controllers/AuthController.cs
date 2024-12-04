@@ -4,6 +4,7 @@ using BookPricesJob.API.Model;
 using BookPricesJob.Data.Entity;
 using BookPricesJob.API.Service;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace BookPricesJob.API.Controllers;
 
@@ -130,6 +131,34 @@ public sealed class AuthController : ControllerBase
         if (result.Succeeded)
         {
             _logger.LogInformation("Claim added to user {0}", user.UserName);
+            return Ok();
+        }
+
+        return BadRequest(result.Errors);
+    }
+
+    [HttpPost("removerole")]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> RemoveRole([FromBody] RemoveRoleRequest removeRoleRequest)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var user = await _userManager.FindByNameAsync(removeRoleRequest.UserName);
+        if (user is null)
+            return BadRequest();
+
+        var claims = await _userManager.GetClaimsAsync(user);
+        var claimToRemove = claims.FirstOrDefault(x => x.Type == Constant.ClaimRoleType && x.Value == removeRoleRequest.RoleName);
+        if (claimToRemove is null)
+            return BadRequest("User does not have this role");
+
+        var result = await _userManager.RemoveClaimAsync(user, claimToRemove);
+        if (result.Succeeded)
+        {
+            _logger.LogInformation("Claim removed from user {0}", user.UserName);
             return Ok();
         }
 
