@@ -72,6 +72,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
     {
         var id = await _unitOfWork.JobRepository.Add(job);
         await _unitOfWork.Complete();
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
 
         return id;
     }
@@ -82,6 +83,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(id));
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunListKey());
     }
 
     public async Task UpdateJob(Job job)
@@ -90,13 +92,57 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(job.Id!));
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunListKey());
+        await RemoveCachedJobRunsForJob(job);
     }
+
+    public async Task RemoveCachedJobRunsForJob(Job job)
+    {
+        foreach (var jobRun in job.JobRuns)
+            await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(jobRun.Id!));
+    }
+
     #endregion
 
     #region JobRun
     public async Task<IList<JobRun>> GetJobRuns()
     {
-        return await _unitOfWork.JobRunRepository.GetAll();
+        var jobRunIds = await _cache.GetAsync<IList<string>>(CacheKeyGenerator.GenerateJobRunListKey());
+        if (jobRunIds is not null)
+            return await GetJobRunsByIds(jobRunIds);
+
+        var jobRunsFromRepository = await _unitOfWork.JobRunRepository.GetAll();
+        if (jobRunsFromRepository.Count > 0)
+            await SetJobRunsInCache(jobRunsFromRepository);
+
+        return jobRunsFromRepository;
+    }
+
+    private async Task<IList<JobRun>> GetJobRunsByIds(IList<string> jobRunIds)
+    {
+        var jobRuns = new List<JobRun>();
+        foreach (var id in jobRunIds)
+        {
+            var jobRun = await GetJobRunById(id);
+            if (jobRun is not null)
+                jobRuns.Add(jobRun);
+        }
+
+        return jobRuns;
+    }
+
+    private async Task SetJobRunsInCache(IList<JobRun> jobRuns)
+    {
+        var jobRunIds = jobRuns.Select(x => x.Id!).ToList();
+        await _cache.SetAsync(CacheKeyGenerator.GenerateJobListKey(), jobRunIds, _jobCacheExpiry);
+
+        foreach (var jobRun in jobRuns)
+        {
+            await _cache.SetAsync(
+                key: CacheKeyGenerator.GenerateJobKey(jobRun.Id!),
+                value: jobRun,
+                expiry: _jobCacheExpiry);
+        }
     }
 
     public async Task<JobRun?> GetJobRunById(string id)
@@ -118,6 +164,8 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         var id = await _unitOfWork.JobRunRepository.Add(jobRun);
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(jobRun.JobId));
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunListKey());
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
 
         return id;
     }
@@ -128,6 +176,8 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(jobRun.Id!));
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(jobRun.JobId));
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunListKey());
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
     }
 
     public async Task DeleteJobRun(string id)
@@ -136,6 +186,8 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await _unitOfWork.Complete();
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(id));
         await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(id));
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunListKey());
+        await _cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
     }
 
     public async Task<IList<(JobRun, Job)>> FilterJobRuns(
