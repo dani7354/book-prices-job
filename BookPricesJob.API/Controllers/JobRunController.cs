@@ -59,6 +59,9 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateJobRun([FromBody] CreateJobRunRequest createJobRunRequest)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var jobRun = JobRunMapper.MapToDomain(createJobRunRequest);
         var jobRunId = await _jobService.CreateJobRun(jobRun);
         _logger.LogInformation("Job Run created with id {JobRunId} by {User}", jobRunId, User.Identity!.Name);

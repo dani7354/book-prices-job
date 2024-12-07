@@ -46,6 +46,9 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateJobRequest jobCreateRequest)
     {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
         var job = JobMapper.MapToDomain(jobCreateRequest);
         var jobId = await _jobService.CreateJob(job);
         _logger.LogInformation("Job with id {JobRunId} created by {User}", jobId, User.Identity!.Name);
