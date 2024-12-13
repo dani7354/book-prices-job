@@ -9,7 +9,7 @@ public static class JobMapper
     {
         return new Job(
             Id: null,
-            IsActive: createRequest.IsActive,
+            IsActive: createRequest.IsActive ?? false,
             Name: createRequest.Name,
             Description: createRequest.Description,
             Created: null,
@@ -21,7 +21,7 @@ public static class JobMapper
     {
         return new Job(
             Id: job.Id,
-            IsActive: updateRequest.IsActive,
+            IsActive: updateRequest.IsActive ?? false,
             Name: updateRequest.Name,
             Description: updateRequest.Description,
             Created: job.Created,

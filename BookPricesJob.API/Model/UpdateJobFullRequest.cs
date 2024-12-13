@@ -5,7 +5,7 @@ namespace BookPricesJob.API.Model;
 public class UpdateJobFullRequest
 {
     [Required]
-    public bool IsActive { get; set; }
+    public bool? IsActive { get; set; }
     [Required]
     public string Id { get; set; } = null!;
     [Required]
