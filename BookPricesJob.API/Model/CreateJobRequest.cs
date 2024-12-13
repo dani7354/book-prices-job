@@ -9,5 +9,5 @@ public class CreateJobRequest
     [Required]
     public string Description { get; set; } = null!;
     [Required]
-    public bool IsActive { get; set; }
+    public bool? IsActive { get; set; }
 }
