@@ -194,7 +194,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         var jobsForJobRuns = new Dictionary<string, Job>();
         foreach (var id in jobRuns.Select(x => x.JobId).Distinct())
         {
-            var job = await _unitOfWork.JobRepository.GetById(id);
+            var job = await GetJobById(id);
             if (job is not null)
                 jobsForJobRuns.Add(id, job);
         }
