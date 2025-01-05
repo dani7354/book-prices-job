@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: ./
-    image: dsp8ef9/bookprices_jobapi
+    image: dsp8ef9/bookprices_jobapi:latest
     env_file: Docker/api.env
     ports:
       - "8080:8080"
