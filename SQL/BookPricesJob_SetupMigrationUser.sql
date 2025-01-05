@@ -1,12 +1,9 @@
--- CHANGE THESE VALUES!
-DECLARE @database NVARCHAR(MAX) = 'BookPricesJob';
-DECLARE @user NVARCHAR(MAX) = '';
-DECLARE @password NVARCHAR(MAX) = '';
-
 -- create database
-CREATE DATABASE IF NOT EXISTS @database;
+CREATE DATABASE IF NOT EXISTS BookPricesJob;
 
 -- create app user with password and grant access to database
+-- REPLACE THE VALUES: <user> and <password> !!!!!
+CREATE USER IF NOT EXISTS '<user>'@'%' IDENTIFIED BY '<password>';
 GRANT SELECT, INSERT, UPDATE, DELETE
-ON @database.*
-TO @user IDENTIFIED BY @password;
+ON BookPricesJob.*
+TO '<user>'@'%';
