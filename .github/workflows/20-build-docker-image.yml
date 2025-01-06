@@ -22,7 +22,15 @@ jobs:
       - name: Build and push BookPricesJob API
         uses: docker/build-push-action@v6
         with:
-          file: Dockerfile
+          file: Docker/api.Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.API_DOCKER_IMAGE_NAME }}:latest
+
+      - name: Build and push BookPricesJob DB Migration
+        uses: docker/build-push-action@v6
+        with:
+          file: Docker/dbmigration.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DB_MIGRATION_DOCKER_IMAGE_NAME }}:latest

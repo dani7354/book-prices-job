@@ -4,6 +4,7 @@ services:
   api:
     build:
       context: ./
+      dockerfile: Docker/api.Dockerfile
     image: dsp8ef9/bookprices_jobapi:latest
     env_file: Docker/api.env
     ports:
@@ -26,5 +27,14 @@ services:
       - "3306:3306"
     volumes:
       - ./Docker/db/data:/var/lib/mysql
+    networks:
+      - localnetwork
+
+  dbmigration:
+    build:
+      context: ./
+      dockerfile: Docker/dbmigration.Dockerfile
+    image: dsp8ef9/bookprices_dbmigration:latest
+    env_file: Docker/dbmigration.env
     networks:
       - localnetwork

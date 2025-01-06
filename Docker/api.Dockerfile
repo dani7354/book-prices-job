@@ -1,8 +1,10 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+ARG DOTNET_VER=8.0
+
+FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VER} AS base
 EXPOSE 8080
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VER} AS build
 WORKDIR /src
 COPY BookPricesJob.sln .
 COPY BookPricesJob.API/BookPricesJob.API.csproj BookPricesJob.API/
