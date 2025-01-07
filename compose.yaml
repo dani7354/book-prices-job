@@ -1,5 +1,8 @@
 networks:
   localnetwork:
+    name: bookpricesjob_local
+    driver: bridge
+    attachable: true
 services:
   api:
     build:
