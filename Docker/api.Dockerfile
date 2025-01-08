@@ -7,15 +7,13 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VER} AS build
 WORKDIR /src
 COPY BookPricesJob.sln .
-COPY BookPricesJob.API/BookPricesJob.API.csproj BookPricesJob.API/
-COPY BookPricesJob.Common/BookPricesJob.Common.csproj BookPricesJob.Common/
-COPY BookPricesJob.Data/BookPricesJob.Data.csproj BookPricesJob.Data/
-COPY BookPricesJob.Application/BookPricesJob.Application.csproj BookPricesJob.Application/
+COPY BookPricesJob.API/ BookPricesJob.API/
+COPY BookPricesJob.Common/ BookPricesJob.Common/
+COPY BookPricesJob.Data/ BookPricesJob.Data/
+COPY BookPricesJob.Application/ BookPricesJob.Application/
 WORKDIR /src/BookPricesJob.API/
 RUN dotnet restore
 
-WORKDIR /src
-COPY . .
 WORKDIR /src/BookPricesJob.API
 RUN dotnet build BookPricesJob.API.csproj -c Release -o /app/build
 
