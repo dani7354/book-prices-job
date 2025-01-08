@@ -20,10 +20,14 @@ public static class EnvironmentHelper
 
     public static string GetConnectionString()
     {
-        var mysqlServer = Environment.GetEnvironmentVariable(Constant.MysqlServer);
-        var mysqlDatabase = Environment.GetEnvironmentVariable(Constant.MysqlDatabase);
-        var mysqlUser = Environment.GetEnvironmentVariable(Constant.MysqlUser);
-        var mysqlPassword = Environment.GetEnvironmentVariable(Constant.MysqlPassword);
+        var mysqlServer = Environment.GetEnvironmentVariable(Constant.MysqlServer) ??
+            throw new KeyNotFoundException($"{Constant.MysqlServer} not set!");
+        var mysqlDatabase = Environment.GetEnvironmentVariable(Constant.MysqlDatabase) ??
+            throw new KeyNotFoundException($"{Constant.MysqlDatabase} not set!");
+        var mysqlUser = Environment.GetEnvironmentVariable(Constant.MysqlUser) ??
+            throw new KeyNotFoundException($"{Constant.MysqlUser} not set!");
+        var mysqlPassword = Environment.GetEnvironmentVariable(Constant.MysqlPassword) ??
+            throw new KeyNotFoundException($"{Constant.MysqlPassword} not set!");
 
         return $"server={mysqlServer}; database={mysqlDatabase}; user={mysqlUser}; password={mysqlPassword}";
     }
