@@ -4,7 +4,7 @@ public static class EnvironmentHelper
 {
     public static void LoadEnvFile()
     {
-        if (Environment.GetEnvironmentVariable(Constant.ASPNETCORE_ENVIRONMENT) == "Production")
+        if (Environment.GetEnvironmentVariable(Constant.AspNetCodeEnvironment) == Constant.ProductionEnvironment)
             return;
 
         var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
