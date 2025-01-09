@@ -1,10 +1,9 @@
 networks:
   localnetwork:
+    name: bookpricesjob_local
 services:
   api:
-    build:
-      context: ./
-    image: dsp8ef9/bookprices_jobapi
+    image: dsp8ef9/bookprices_jobapi:latest
     env_file: Docker/api.env
     ports:
       - "8080:8080"
@@ -26,5 +25,10 @@ services:
       - "3306:3306"
     volumes:
       - ./Docker/db/data:/var/lib/mysql
+    networks:
+      - localnetwork
+  dbmigration:
+    image: dsp8ef9/bookprices_jobapi_dbmigration:latest
+    env_file: Docker/dbmigration.env
     networks:
       - localnetwork

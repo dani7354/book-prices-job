@@ -13,4 +13,9 @@ public static class Constant
     public const string JwtSigningKey = "JWT_SIGNING_KEY";
     public const string JwtIssuer = "JWT_ISSUER";
     public const string JwtAudience = "JWT_AUDIENCE";
+
+    public const string AspNetCodeEnvironment = "ASPNETCORE_ENVIRONMENT";
+
+    public const string DevelopmentEnvironment = "Development";
+    public const string ProductionEnvironment = "Production";
 }

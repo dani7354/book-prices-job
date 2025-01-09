@@ -1,6 +1,9 @@
 bin/
 obj/
-Docker/
+
+Docker/*
+!Docker/*.Dockerfile
+
 .vscode/
 
 appsettings.Development.json
