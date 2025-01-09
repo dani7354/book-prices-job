@@ -50,8 +50,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: update_bookprice_jobapi_docker.sh
-
+          script: docker service update --image ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DB_MIGRATION_DOCKER_IMAGE_NAME }}:latest bookprices_job_api
       - name: Run DB migrations
         uses: appleboy/ssh-action@master
         with:
@@ -59,4 +58,4 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          script: run_db_migrations.sh ${{ vars.DOCKER_NETWORK_NAME }}
+          script: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DB_MIGRATION_DOCKER_IMAGE_NAME }}:latest  && docker run ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DB_MIGRATION_DOCKER_IMAGE_NAME }}:latest --network=${{ vars.DOCKER_NETWORK_NAME }} --env-file ${{ vars.DBMIGRATION_ENV_FILE }}
