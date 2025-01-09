@@ -28,7 +28,7 @@ services:
     networks:
       - localnetwork
   dbmigration:
-    image: dsp8ef9/bookprices_dbmigration:latest
+    image: dsp8ef9/bookprices_jobapi_dbmigration:latest
     env_file: Docker/dbmigration.env
     networks:
       - localnetwork
