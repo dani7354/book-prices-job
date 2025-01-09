@@ -1,4 +1,4 @@
-name: Docker Image Build and Push
+name: Docker Image Build, Push and Deploy
 
 on:
   push:
@@ -34,3 +34,29 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DB_MIGRATION_DOCKER_IMAGE_NAME }}:latest
+
+  deploy_to_production:
+    runs-on: ubuntu-latest
+    environment:
+      name: Production
+      url: https://github.com/${{ github.repository }}/releases/tag/v${{ vars.DEV_VERSION }}
+    name: Deployment
+    needs: [  build_docker_images ]
+    steps:
+      - name: Deploy using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: update_bookprice_jobapi_docker.sh
+
+      - name: Run DB migrations
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: run_db_migrations.sh ${{ vars.DOCKER_NETWORK_NAME }}
