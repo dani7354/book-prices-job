@@ -5,11 +5,11 @@ namespace BookPricesJob.API.Model;
 public class UpdateJobFullRequest
 {
     [Required]
-    public bool? IsActive { get; set; }
+    public bool? IsActive { get; init; }
     [Required]
-    public string Id { get; set; } = null!;
+    public string Id { get; init; } = null!;
     [Required]
-    public string Name { get; set; } = null!;
+    public string Name { get; init; } = null!;
     [Required]
-    public string Description { get; set; } = null!;
+    public string Description { get; init; } = null!;
 }

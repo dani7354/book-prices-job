@@ -6,11 +6,9 @@ namespace BookPricesJob.API.Filter;
 
 public class CustomExceptionFilterAttribute(ILogger<CustomExceptionFilterAttribute> logger) : IExceptionFilter
 {
-    private readonly ILogger<CustomExceptionFilterAttribute> _logger = logger;
-
     public void OnException(ExceptionContext context)
     {
-        _logger.LogError(context.Exception, context.Exception.Message);
+        logger.LogError(context.Exception, context.Exception.Message);
 
         var statusCode = context.Exception switch
         {

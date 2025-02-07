@@ -6,8 +6,8 @@ namespace BookPricesJob.API.Model;
 public class RemoveRoleRequest
 {
     [Required]
-    public string UserName { get; set; } = null!;
+    public string UserName { get; } = null!;
 
     [Required]
-    public string RoleName { get; set; } = null!;
+    public string RoleName { get; } = null!;
 }
