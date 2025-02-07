@@ -10,14 +10,12 @@ namespace BookPricesJob.Data.Repository;
 
 public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
 {
-    private readonly DatabaseContextBase _dbContext = dbContext;
-
     public async Task<string> Add(JobRun jobDomain)
     {
         try
         {
             var newEntity = JobRunMapper.MapToNewEntity(jobDomain);
-            await _dbContext.JobRun.AddAsync(newEntity);
+            await dbContext.JobRun.AddAsync(newEntity);
 
             return newEntity.Id.ToString();
         }
@@ -31,11 +29,11 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
     {
         try
         {
-            var jobRunEntity = await _dbContext.JobRun
+            var jobRunEntity = await dbContext.JobRun
                 .FirstOrDefaultAsync(x => x.Id == id) ??
                     throw new NotFoundException(id: id);
 
-            _dbContext.JobRun.Remove(jobRunEntity);
+            dbContext.JobRun.Remove(jobRunEntity);
         }
         catch (MySqlException e)
         {
@@ -47,7 +45,7 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
     {
         try
         {
-            var query = _dbContext.JobRun.AsNoTracking();
+            var query = dbContext.JobRun.AsNoTracking();
 
             if (jobId is not null)
                 query = query.Where(j => j.JobId == jobId);
@@ -77,7 +75,7 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
     {
         try
         {
-            var jobRuns = await _dbContext.JobRun
+            var jobRuns = await dbContext.JobRun
                 .AsNoTracking()
                 .Include(j => j.Arguments)
                     .ThenInclude(x => x.Values)
@@ -97,7 +95,7 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
     {
         try
         {
-            var jobRun = await _dbContext.JobRun
+            var jobRun = await dbContext.JobRun
                 .AsNoTracking()
                 .Include(j => j.Arguments)
                     .ThenInclude(x => x.Values)
@@ -115,15 +113,15 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
     {
         try
         {
-            var existingEntity = await _dbContext.JobRun
+            var existingEntity = await dbContext.JobRun
                 .Include(j => j.Arguments)
                 .FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id)
                 ?? throw new NotFoundException(id: jobRunDomain.Id!);
 
-            _dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
+            dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
             var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
 
-            _dbContext.JobRun.Update(updatedJobRun);
+            dbContext.JobRun.Update(updatedJobRun);
 
         }
         catch (DbUpdateConcurrencyException e)
