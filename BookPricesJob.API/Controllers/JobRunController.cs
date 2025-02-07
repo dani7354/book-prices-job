@@ -12,9 +12,6 @@ namespace BookPricesJob.API.Controllers;
 [Route("api/jobruns")]
 public sealed class JobRunController(IJobService jobService, ILogger<JobRunController> logger) : ControllerBase
 {
-    private readonly IJobService _jobService = jobService;
-    private readonly ILogger<JobRunController> _logger = logger;
-
     [HttpGet]
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<IList<JobRunListItemDto>>(StatusCodes.Status200OK)]
@@ -29,7 +26,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         JobRunPriority? jobRunPriority = Enum.TryParse<JobRunPriority>(
             priority, true, out var priorityEnum) ? priorityEnum : null;
 
-        var jobRuns = await _jobService.FilterJobRuns(jobId, jobRunStatus, jobRunPriority, limit);
+        var jobRuns = await jobService.FilterJobRuns(jobId, jobRunStatus, jobRunPriority, limit);
         var jobRunDtos = JobRunMapper.MapToListDto(jobRuns);
 
         return Ok(jobRunDtos);
@@ -41,11 +38,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> JobRun([FromRoute] string id)
     {
-        var jobRun = await _jobService.GetJobRunById(id);
+        var jobRun = await jobService.GetJobRunById(id);
         if (jobRun is null)
             return NotFound(id);
 
-        var job = await _jobService.GetJobById(jobRun.JobId);
+        var job = await jobService.GetJobById(jobRun.JobId);
         if (job is null)
             return NotFound(jobRun.JobId);
         var jobRunDto = JobRunMapper.MapToDto(jobRun, job.Name);
@@ -63,14 +60,14 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             return BadRequest(ModelState);
 
         var jobRun = JobRunMapper.MapToDomain(createJobRunRequest);
-        var jobRunId = await _jobService.CreateJobRun(jobRun);
-        _logger.LogInformation("Job Run created with id {JobRunId} by {User}", jobRunId, User.Identity!.Name);
+        var jobRunId = await jobService.CreateJobRun(jobRun);
+        logger.LogInformation("Job Run created with id {JobRunId} by {User}", jobRunId, User.Identity!.Name);
 
-        jobRun = await _jobService.GetJobRunById(jobRunId);
+        jobRun = await jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
             return BadRequest();
 
-        var job = await _jobService.GetJobById(jobRun.JobId);
+        var job = await jobService.GetJobById(jobRun.JobId);
         if (job is null)
             return BadRequest();
 
@@ -93,11 +90,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var job = await _jobService.GetJobById(updateJobRunRequest.JobId);
+        var job = await jobService.GetJobById(updateJobRunRequest.JobId);
         if (job is null)
             return BadRequest();
 
-        var jobRun = await _jobService.GetJobRunById(id);
+        var jobRun = await jobService.GetJobRunById(id);
         if (jobRun is null)
             return BadRequest();
 
@@ -105,8 +102,8 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             updateJobRunRequest,
             jobRun);
 
-        await _jobService.UpdateJobRun(updatedJobRun);
-        _logger.LogInformation("JobRun with id {JobRunId} updated by {User}", id, User.Identity!.Name);
+        await jobService.UpdateJobRun(updatedJobRun);
+        logger.LogInformation("JobRun with id {JobRunId} updated by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
@@ -124,7 +121,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var jobRun = await _jobService.GetJobRunById(id);
+        var jobRun = await jobService.GetJobRunById(id);
         if (jobRun is null)
             return BadRequest();
 
@@ -138,8 +135,8 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             jobRun = jobRun with { Arguments = updateJobRunRequest.Arguments.Select(
                 x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values)).ToList() };
 
-        await _jobService.UpdateJobRun(jobRun);
-        _logger.LogInformation("JobRun with id {JobRunId} updated by {User}", id, User.Identity!.Name);
+        await jobService.UpdateJobRun(jobRun);
+        logger.LogInformation("JobRun with id {JobRunId} updated by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
@@ -150,12 +147,12 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
-        var jobRun = await _jobService.GetJobRunById(id);
+        var jobRun = await jobService.GetJobRunById(id);
         if (jobRun is null)
             return NotFound();
 
-        await _jobService.DeleteJobRun(id);
-        _logger.LogInformation("JobRun with id {JobRunId} deleted by {User}", id, User.Identity!.Name);
+        await jobService.DeleteJobRun(id);
+        logger.LogInformation("JobRun with id {JobRunId} deleted by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
