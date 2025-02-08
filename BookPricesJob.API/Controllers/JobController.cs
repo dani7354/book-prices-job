@@ -11,15 +11,12 @@ namespace BookPricesJob.API.Controllers;
 [Route("api/jobs")]
 public sealed class JobController(IJobService jobService, ILogger<JobController> logger) : ControllerBase
 {
-    private readonly IJobService _jobService = jobService;
-    private readonly ILogger<JobController> _logger = logger;
-
     [HttpGet]
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<IList<JobListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> Jobs()
     {
-        var jobs =  await _jobService.GetJobs();
+        var jobs =  await jobService.GetJobs();
         var jobDtos = JobMapper.MapToList(jobs);
 
         return Ok(jobDtos);
@@ -31,7 +28,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Job([FromRoute] string id)
     {
-        var job = await _jobService.GetJobById(id);
+        var job = await jobService.GetJobById(id);
         if (job is null)
             return NotFound();
 
@@ -50,10 +47,10 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
             return BadRequest(ModelState);
 
         var job = JobMapper.MapToDomain(jobCreateRequest);
-        var jobId = await _jobService.CreateJob(job);
-        _logger.LogInformation("Job with id {JobRunId} created by {User}", jobId, User.Identity!.Name);
+        var jobId = await jobService.CreateJob(job);
+        logger.LogInformation("Job with id {JobRunId} created by {User}", jobId, User.Identity!.Name);
 
-        job = await _jobService.GetJobById(jobId);
+        job = await jobService.GetJobById(jobId);
         if (job is null)
             return BadRequest();
 
@@ -75,13 +72,13 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (id != jobUpdateRequest.Id)
             return BadRequest();
 
-        var job = await _jobService.GetJobById(id);
+        var job = await jobService.GetJobById(id);
         if (job is null)
             return NotFound();
 
         var updatedJob = JobMapper.MapToDomain(jobUpdateRequest, job);
-        await _jobService.UpdateJob(updatedJob);
-        _logger.LogInformation("Job with id {JobRunId} updated by {User}", id, User.Identity!.Name);
+        await jobService.UpdateJob(updatedJob);
+        logger.LogInformation("Job with id {JobRunId} updated by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
@@ -97,7 +94,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var job = await _jobService.GetJobById(id);
+        var job = await jobService.GetJobById(id);
         if (job is null)
             return NotFound();
 
@@ -108,8 +105,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (jobUpdateRequest.Description != null)
             job = job with { Description = jobUpdateRequest.Description };
 
-        await _jobService.UpdateJob(job);
-        _logger.LogInformation("Job with id {JobRunId} updated by {User}", id, User.Identity!.Name);
+        await jobService.UpdateJob(job);
+        logger.LogInformation("Job with id {JobRunId} updated by {User}", id, User.Identity!.Name);
 
         return Ok();
     }
@@ -120,8 +117,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
-        await _jobService.DeleteJob(id);
-        _logger.LogInformation("Job with id {JobId} deleted by {User}", id, User.Identity!.Name);
+        await jobService.DeleteJob(id);
+        logger.LogInformation("Job with id {JobId} deleted by {User}", id, User.Identity!.Name);
 
         return Ok();
     }

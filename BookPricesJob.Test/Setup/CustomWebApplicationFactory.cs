@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -23,9 +24,10 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             services.RemoveAll(typeof(IdentityDatabaseContextMysql));
             services.RemoveAll(typeof(IdentityDatabaseContextBase));
             services.RemoveAll(typeof(DbContextOptions<DatabaseContextBase>));
-            services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContextBase>));
             services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContextMysql>));
-
+            services.RemoveAll(typeof(IDbContextOptionsConfiguration<DatabaseContextBase>));
+            services.RemoveAll(typeof(IDbContextOptionsConfiguration<IdentityDatabaseContextMysql>));
+            
             services.AddDbContext<DatabaseContextBase>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 

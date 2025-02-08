@@ -19,14 +19,12 @@ public static class JobMapper
 
     public static Job MapToDomain(UpdateJobFullRequest updateRequest, Job job)
     {
-        return new Job(
-            Id: job.Id,
-            IsActive: updateRequest.IsActive ?? false,
-            Name: updateRequest.Name,
-            Description: updateRequest.Description,
-            Created: job.Created,
-            JobRuns: job.JobRuns
-        );
+        return job with 
+            { 
+                IsActive = updateRequest.IsActive ?? false, 
+                Name = updateRequest.Name, 
+                Description = updateRequest.Description 
+            };
     }
 
     public static JobListItemDto MapToListItemDto(Job job)

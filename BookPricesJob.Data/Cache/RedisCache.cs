@@ -8,11 +8,9 @@ public class RedisCache(IDistributedCache distributedCache) : ICache
 {
     private readonly TimeSpan _defaultExpiry = TimeSpan.FromMinutes(5);
 
-    private readonly IDistributedCache _distributedCache = distributedCache;
-
     public async Task<T?> GetAsync<T>(string key)
     {
-        var value = await _distributedCache.GetStringAsync(key);
+        var value = await distributedCache.GetStringAsync(key);
 
         return !string.IsNullOrEmpty(value) ? JsonSerializer.Deserialize<T>(value) : default;
     }
@@ -25,11 +23,11 @@ public class RedisCache(IDistributedCache distributedCache) : ICache
         };
         var serializedValue = JsonSerializer.Serialize(value);
 
-        await _distributedCache.SetStringAsync(key, serializedValue, options);
+        await distributedCache.SetStringAsync(key, serializedValue, options);
     }
 
     public async Task RemoveAsync(string key)
     {
-        await _distributedCache.RemoveAsync(key);
+        await distributedCache.RemoveAsync(key);
     }
 }

@@ -6,19 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BookPricesJob.API.Service;
 
-public class TokenService : ITokenService
+public class TokenService(string tokenSigningKey, string tokenAudience, string tokenIssuer) : ITokenService
 {
     private const int TokenExpirationDays = 7;
-    private readonly string _tokenSigningKey;
-    private readonly string _tokenAudience;
-    private readonly string _tokenIssuer;
-
-    public TokenService(string tokenSigningKey, string tokenAudience, string tokenIssuer)
-    {
-        _tokenSigningKey = tokenSigningKey;
-        _tokenAudience = tokenAudience;
-        _tokenIssuer = tokenIssuer;
-    }
 
     public string CreateToken(ApiUser user, IEnumerable<Claim> userClaims)
     {
@@ -33,15 +23,15 @@ public class TokenService : ITokenService
 
         claims.AddRange(userClaims.Where(uc => uc.Type != null && uc.Value != null));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenSigningKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSigningKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Issuer = _tokenIssuer,
-            Audience = _tokenAudience,
+            Issuer = tokenIssuer,
+            Audience = tokenAudience,
             Subject = new ClaimsIdentity(claims),
             Expires = DateTime.Now.AddDays(TokenExpirationDays),
-            SigningCredentials = creds
+            SigningCredentials = credentials
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();

@@ -9,41 +9,27 @@ namespace BookPricesJob.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class AuthController : ControllerBase
+public sealed class AuthController(
+    ILogger<AuthController> logger,
+    UserManager<ApiUser> userManager,
+    SignInManager<ApiUser> signInManager,
+    ITokenService tokenService,
+    IConfiguration configuration)
+    : ControllerBase
 {
-    private readonly ILogger<AuthController> _logger;
-    private readonly UserManager<ApiUser> _userManager;
-    private readonly SignInManager<ApiUser> _signInManager;
-    private readonly ITokenService _tokenService;
-    private readonly IConfiguration _configuration;
-
-    public AuthController(
-        ILogger<AuthController> logger,
-        UserManager<ApiUser> userManager,
-        SignInManager<ApiUser> signInManager,
-        ITokenService tokenService,
-        IConfiguration configuration)
-    {
-        _logger = logger;
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _tokenService = tokenService;
-        _configuration = configuration;
-    }
-
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
     {
-        _logger.LogInformation("Logging in user {0}...", loginRequest.UserName);
+        logger.LogInformation("Logging in user {0}...", loginRequest.UserName);
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
         var userName = loginRequest.UserName;
         var password = loginRequest.Password;
-        var result = await _signInManager.PasswordSignInAsync(
+        var result = await signInManager.PasswordSignInAsync(
             userName: userName,
             password: password,
             isPersistent: false,
@@ -52,14 +38,14 @@ public sealed class AuthController : ControllerBase
 
         if (result.Succeeded)
         {
-            _logger.LogInformation("User {0} logged in successfully!", userName);
-            var user = await _userManager.FindByNameAsync(userName);
+            logger.LogInformation("User {0} logged in successfully!", userName);
+            var user = await userManager.FindByNameAsync(userName);
             if (user is null)
                 return BadRequest("An error occurred while logging in!");
 
-            var userClaims = await _userManager.GetClaimsAsync(user);
+            var userClaims = await userManager.GetClaimsAsync(user);
 
-            return Ok(_tokenService.CreateToken(user, userClaims));
+            return Ok(tokenService.CreateToken(user, userClaims));
         }
 
         return Unauthorized();
@@ -72,13 +58,13 @@ public sealed class AuthController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest registerRequest)
     {
-        if (!_configuration.GetValue<bool>(Constant.AllowNewUsers))
+        if (!configuration.GetValue<bool>(Constant.AllowNewUsers))
         {
-            _logger.LogInformation("Registering new users is not allowed");
+            logger.LogInformation("Registering new users is not allowed");
             return BadRequest("Registering new users is not allowed");
         }
 
-        _logger.LogInformation("Registering user {0}...", registerRequest.UserName);
+        logger.LogInformation("Registering user {0}...", registerRequest.UserName);
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -90,10 +76,10 @@ public sealed class AuthController : ControllerBase
             UserName = registerRequest.UserName,
         };
 
-        var result = await _userManager.CreateAsync(user, registerRequest.Password);
+        var result = await userManager.CreateAsync(user, registerRequest.Password);
         if (result.Succeeded)
         {
-            _logger.LogInformation("User {0} registered successfully!", registerRequest.UserName);
+            logger.LogInformation("User {0} registered successfully!", registerRequest.UserName);
             return Ok();
         }
 
@@ -109,7 +95,7 @@ public sealed class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var user = await _userManager.FindByNameAsync(addRoleRequest.UserName);
+        var user = await userManager.FindByNameAsync(addRoleRequest.UserName);
         if (user is null)
             return BadRequest();
 
@@ -117,7 +103,7 @@ public sealed class AuthController : ControllerBase
         if (!validRoles.Contains(addRoleRequest.RoleName))
             return BadRequest($"Invalid role name: {addRoleRequest.RoleName}");
 
-        var userClaims = await _userManager.GetClaimsAsync(user);
+        var userClaims = await userManager.GetClaimsAsync(user);
         if (userClaims.Any(x => x.Type == Constant.ClaimRoleType && x.Value == addRoleRequest.RoleName))
             return BadRequest("User already has this role");
 
@@ -129,11 +115,11 @@ public sealed class AuthController : ControllerBase
         };
 
         user.UserClaims.Add(claim);
-        var result = await _userManager.UpdateAsync(user);
+        var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded)
         {
-            _logger.LogInformation("Claim added to user {0}", user.UserName);
+            logger.LogInformation("Claim added to user {0}", user.UserName);
             return Ok();
         }
 
@@ -149,20 +135,20 @@ public sealed class AuthController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var user = await _userManager.FindByNameAsync(removeRoleRequest.UserName);
+        var user = await userManager.FindByNameAsync(removeRoleRequest.UserName);
         if (user is null)
             return BadRequest();
 
-        var claims = await _userManager.GetClaimsAsync(user);
+        var claims = await userManager.GetClaimsAsync(user);
         var claimToRemove = claims.FirstOrDefault(
             x => x.Type == Constant.ClaimRoleType && x.Value == removeRoleRequest.RoleName);
         if (claimToRemove is null)
             return BadRequest("User does not have this role");
 
-        var result = await _userManager.RemoveClaimAsync(user, claimToRemove);
+        var result = await userManager.RemoveClaimAsync(user, claimToRemove);
         if (result.Succeeded)
         {
-            _logger.LogInformation("Claim removed from user {0}", user.UserName);
+            logger.LogInformation("Claim removed from user {0}", user.UserName);
             return Ok();
         }
 
