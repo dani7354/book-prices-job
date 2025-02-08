@@ -28,10 +28,10 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             services.RemoveAll(typeof(IDbContextOptionsConfiguration<DatabaseContextBase>));
             services.RemoveAll(typeof(IDbContextOptionsConfiguration<IdentityDatabaseContextMysql>));
             
-            services.AddDbContext<DatabaseContextBase, DatabaseContextBase>(
+            services.AddDbContext<DatabaseContextBase>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
-            services.AddDbContext<IdentityDatabaseContextBase, IdentityDatabaseContextBase>(
+            services.AddDbContext<IdentityDatabaseContextBase>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
             services.RemoveAll(typeof(ICache));
