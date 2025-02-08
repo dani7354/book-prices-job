@@ -7,6 +7,9 @@ namespace BookPricesJob.Test.IntegrationTest;
 
 public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
+    private const string RegisterEndpoint = $"{Constant.AuthBaseEndpoint}/register";
+    private const string LoginEndpoint = $"{Constant.AuthBaseEndpoint}/login";
+    
     private readonly HttpClient _client;
     public AuthControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
     {
@@ -34,7 +37,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
 
         var registerPayload = HttpClientHelper.CreateStringPayload(userRegisterRequest);
 
-        var registerResponse = await client.PostAsync($"{Constant.AuthBaseEndpoint}/register", registerPayload);
+        var registerResponse = await client.PostAsync(RegisterEndpoint, registerPayload);
 
         Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
     }
@@ -52,7 +55,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
 
         var registerPayload = HttpClientHelper.CreateStringPayload(userRegisterRequest);
 
-        var registerResponse = await _client.PostAsync($"{Constant.AuthBaseEndpoint}/register", registerPayload);
+        var registerResponse = await _client.PostAsync(RegisterEndpoint, registerPayload);
 
         Assert.Equal(HttpStatusCode.BadRequest, registerResponse.StatusCode);
     }
@@ -71,7 +74,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
         var registerPayload = HttpClientHelper.CreateStringPayload(userRegisterRequest);
 
         var client = CreateClientNewUsersAllowed();
-        var registerResponse = await client.PostAsync($"{Constant.AuthBaseEndpoint}/register", registerPayload);
+        var registerResponse = await client.PostAsync(RegisterEndpoint, registerPayload);
 
         Assert.Equal(HttpStatusCode.OK, registerResponse.StatusCode);
 
@@ -82,7 +85,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
         };
         var loginPayload = HttpClientHelper.CreateStringPayload(loginRequest);
 
-        var loginResponse = await client.PostAsync($"{Constant.AuthBaseEndpoint}/login", loginPayload);
+        var loginResponse = await client.PostAsync(LoginEndpoint, loginPayload);
 
         Assert.Equal(HttpStatusCode.OK, loginResponse.StatusCode);
     }

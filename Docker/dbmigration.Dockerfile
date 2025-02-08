@@ -1,4 +1,4 @@
-ARG DOTNET_VER=8.0
+ARG DOTNET_VER=9.0
 
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VER} AS buildbase
 
