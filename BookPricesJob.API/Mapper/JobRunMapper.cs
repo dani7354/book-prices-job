@@ -55,7 +55,11 @@ public static class JobRunMapper
             jobRun.Priority.ToString(),
             jobRun.Status.ToString(),
             jobRun.Created,
-            jobRun.Updated
+            jobRun.Updated,
+            jobRun.Arguments
+                .Select(
+                    x => new JobRunArgumentDto { Name = x.Name, Type = x.Type, Values = x.Values })
+                .ToList()
         );
     }
 
@@ -70,7 +74,7 @@ public static class JobRunMapper
             jobRun.Created,
             jobRun.Updated,
             jobRun.Arguments.Select(
-                x => new JobRunArgumentDto() { Name = x.Name, Type = x.Type, Values = x.Values })
+                    x => new JobRunArgumentDto() { Name = x.Name, Type = x.Type, Values = x.Values })
                 .ToList(),
             jobRun.ErrorMessage
         );
