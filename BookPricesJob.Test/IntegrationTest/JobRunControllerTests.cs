@@ -56,10 +56,36 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         ],
     ];
 
-    private async Task<JobRunDto> CreateJobWithJobRun(
+    private async Task<JobRunDto> CreateJobRunForJob(
+        string jobId,
         JobRunPriority priority = JobRunPriority.Normal)
     {
-        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.CreateJobRequestOne);
+        var jobRunPayload = new CreateJobRunRequest()
+        {
+            JobId = jobId,
+            Priority = priority.ToString()
+        };
+
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
+
+        var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
+        Assert.NotNull(jobRunDto);
+
+        return jobRunDto;
+    }
+
+    private async Task<JobRunDto> CreateJobWithJobRun(
+        JobRunPriority priority = JobRunPriority.Normal,
+        bool isActive = true)
+    {
+        var jobRequest = new CreateJobRequest
+        {
+            Name = TestData.CreateJobRequestOne.Name,
+            Description = TestData.CreateJobRequestOne.Description,
+            IsActive = isActive
+        };
+        var responseCreateJob = await HttpClientHelper.PostJob(_client, jobRequest);
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
         var jobId = jobDto!.Id;
@@ -88,6 +114,72 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
         Assert.NotNull(jobRuns);
         Assert.Empty(jobRuns);
+
+        var contentType = response.Content.Headers.ContentType?.ToString();
+        Assert.Equal("application/json; charset=utf-8", contentType);
+    }
+    
+    [Fact]
+    public async Task JobRuns_NoJobsOrJobRuns_ReturnsSuccessWithListOfJobRuns()
+    {
+        var jobRunDto = await CreateJobWithJobRun();
+        await CreateJobRunForJob(jobRunDto.JobId);
+        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
+        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
+        
+        var response = await _client.GetAsync(Constant.JobRunsBaseEndpoint);
+
+        response.EnsureSuccessStatusCode();
+
+        var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
+        Assert.NotNull(jobRuns);
+        Assert.Equal(4, jobRuns.Length);
+
+        var contentType = response.Content.Headers.ContentType?.ToString();
+        Assert.Equal("application/json; charset=utf-8", contentType);
+    }
+    
+    [Fact]
+    public async Task JobRuns_NoJobsOrJobRuns_ReturnsSuccessWithListOfJobRunsFilteredByPriorityAndJobId()
+    {
+        var jobRunDto = await CreateJobWithJobRun();
+        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
+        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Normal);
+        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
+
+        var url = $"{Constant.JobRunsBaseEndpoint}";
+        url += $"?jobId={jobRunDto.JobId}";
+        url += $"&priority={JobRunPriority.Normal}";
+        url += $"&priority={JobRunPriority.High}";
+        
+        var response = await _client.GetAsync(url);
+
+        response.EnsureSuccessStatusCode();
+
+        var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
+        Assert.NotNull(jobRuns);
+        Assert.Equal(3, jobRuns.Length);
+
+        var contentType = response.Content.Headers.ContentType?.ToString();
+        Assert.Equal("application/json; charset=utf-8", contentType);
+    }
+    
+    [Fact]
+    public async Task JobRuns_NoJobsOrJobRuns_ReturnsSuccessWithListOfJobRunsFilteredByJobActive()
+    {
+        await CreateJobWithJobRun(isActive: false);
+        await CreateJobWithJobRun(isActive: true);
+        await CreateJobWithJobRun(isActive: true);
+
+        var url = $"{Constant.JobRunsBaseEndpoint}?active=true";
+        
+        var response = await _client.GetAsync(url);
+
+        response.EnsureSuccessStatusCode();
+
+        var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
+        Assert.NotNull(jobRuns);
+        Assert.Equal(2, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
         Assert.Equal("application/json; charset=utf-8", contentType);

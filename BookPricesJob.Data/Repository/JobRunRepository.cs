@@ -41,18 +41,33 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
         }
     }
 
-    public async Task<IList<JobRun>> FilterBy(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit)
+    public async Task<IList<JobRun>> FilterBy(
+        bool? active,
+        int? limit,
+        string? jobId, 
+        IEnumerable<JobRunStatus>? statuses, 
+        IEnumerable<JobRunPriority>? priorities)
     {
         try
         {
             var query = dbContext.JobRun.AsNoTracking();
-
             if (jobId is not null)
                 query = query.Where(j => j.JobId == jobId);
-            if (status is not null)
-                query = query.Where(j => j.Status == status.Value.ToString());
-            if (priority is not null)
-                query = query.Where(j => j.Priority == priority.Value.ToString());
+            
+            if (active.HasValue)
+                query = query.Where(j => j.Job.IsActive == active);
+            
+            if (statuses is not null)
+            {
+                var statusesSet = statuses.Select(s => s.ToString()).ToHashSet();
+                query = query.Where(j => statusesSet.Contains(j.Status));
+            }
+
+            if (priorities is not null)
+            {
+                var prioritiesSet = priorities.Select(s => s.ToString()).ToHashSet();
+                query = query.Where(j => prioritiesSet.Contains(j.Priority));
+            }
             if (limit is not null)
                 query = query.Take(limit.Value);
 

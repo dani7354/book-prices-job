@@ -1,3 +1,4 @@
+using BookPricesJob.API.Extension;
 using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
@@ -15,18 +16,25 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [HttpGet]
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<IList<JobRunListItemDto>>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> JobRuns(
-        [FromQuery] int? limit = null,
-        [FromQuery] string? jobId = null,
-        [FromQuery] string? status = null,
-        [FromQuery] string? priority = null)
+    public async Task<IActionResult> JobRuns([FromQuery] JobRunListRequest jobRunListRequest)
     {
-        JobRunStatus? jobRunStatus = Enum.TryParse<JobRunStatus>(
-            status, true, out var statusEnum) ? statusEnum : null;
-        JobRunPriority? jobRunPriority = Enum.TryParse<JobRunPriority>(
-            priority, true, out var priorityEnum) ? priorityEnum : null;
+        var jobRunStatuses = jobRunListRequest.Status?
+            .Select(s => s.SafelyConvertToEnum<JobRunStatus>())
+            .Where(p => p != null)
+            .Select(p => p!.Value);
 
-        var jobRuns = await jobService.FilterJobRuns(jobId, jobRunStatus, jobRunPriority, limit);
+        var jobRunPriorities = jobRunListRequest.Priority?
+            .Select(p => p.SafelyConvertToEnum<JobRunPriority>())
+            .Where(p => p != null)
+            .Select(p => p!.Value);
+
+        var jobRuns = await jobService.FilterJobRuns(
+            jobRunListRequest.Active,
+            jobRunListRequest.Limit,
+            jobRunListRequest.JobId, 
+            jobRunStatuses, 
+            jobRunPriorities);
+        
         var jobRunDtos = JobRunMapper.MapToListDto(jobRuns);
 
         return Ok(jobRunDtos);

@@ -13,7 +13,12 @@ public interface IJobService
 
     // JobRun
     Task<IList<JobRun>> GetJobRuns();
-    Task<IList<(JobRun, Job)>> FilterJobRuns(string? jobId, JobRunStatus? status, JobRunPriority? priority, int? limit);
+    Task<IList<(JobRun, Job)>> FilterJobRuns(
+        bool? active,
+        int? limit,
+        string? jobId, 
+        IEnumerable<JobRunStatus>? statuses,
+        IEnumerable<JobRunPriority>? priorities);
     Task<JobRun?> GetJobRunById(string id);
     Task<string> CreateJobRun(JobRun jobRun);
     Task UpdateJobRun(JobRun jobRun);

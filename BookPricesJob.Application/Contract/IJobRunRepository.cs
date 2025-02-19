@@ -1,14 +1,13 @@
 namespace BookPricesJob.Application.Contract;
 
-using System.Reflection.Metadata;
 using BookPricesJob.Common.Domain;
 
 public interface IJobRunRepository : IRepository<JobRun>
 {
     public Task<IList<JobRun>> FilterBy(
+        bool? active,
+        int? limit,
         string? jobId,
-        JobRunStatus? status,
-        JobRunPriority? priority,
-        int? limit);
-
+        IEnumerable<JobRunStatus>? statuses,
+        IEnumerable<JobRunPriority>? priorities);
 }

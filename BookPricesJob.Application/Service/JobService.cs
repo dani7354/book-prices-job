@@ -184,13 +184,19 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
     }
 
     public async Task<IList<(JobRun, Job)>> FilterJobRuns(
+        bool? active,
+        int? limit,
         string? jobId,
-        JobRunStatus? status,
-        JobRunPriority? priority,
-        int? limit)
+        IEnumerable<JobRunStatus>? statuses,
+        IEnumerable<JobRunPriority>? priorities)
     {
-        var jobRuns = await _unitOfWork.JobRunRepository.FilterBy(jobId, status, priority, limit);
-
+        var jobRuns = await _unitOfWork.JobRunRepository.FilterBy(
+            active, 
+            limit, 
+            jobId, 
+            statuses, 
+            priorities);
+        
         var jobsForJobRuns = new Dictionary<string, Job>();
         foreach (var id in jobRuns.Select(x => x.JobId).Distinct())
         {
