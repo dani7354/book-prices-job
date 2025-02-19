@@ -85,6 +85,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             Description = TestData.CreateJobRequestOne.Description,
             IsActive = isActive
         };
+        
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobRequest);
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
@@ -124,8 +125,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     {
         var jobRunDto = await CreateJobWithJobRun();
         await CreateJobRunForJob(jobRunDto.JobId);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
+        await CreateJobRunForJob(jobRunDto.JobId);
+        await CreateJobRunForJob(jobRunDto.JobId);
         
         var response = await _client.GetAsync(Constant.JobRunsBaseEndpoint);
 
@@ -143,8 +144,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     public async Task JobRuns_NoJobsOrJobRuns_ReturnsSuccessWithListOfJobRunsFilteredByPriorityAndJobId()
     {
         var jobRunDto = await CreateJobWithJobRun();
+        await CreateJobRunForJob(jobRunDto.JobId);
         await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Normal);
         await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
 
         var url = $"{Constant.JobRunsBaseEndpoint}";
