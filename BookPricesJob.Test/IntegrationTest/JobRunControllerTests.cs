@@ -104,6 +104,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
 
         return jobRunDto;
     }
+    
 
     [Fact]
     public async Task JobRuns_NoJobsOrJobRuns_ReturnsSuccessEmptyArray()
@@ -168,9 +169,12 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     [Fact]
     public async Task JobRuns_NoJobsOrJobRuns_ReturnsSuccessWithListOfJobRunsFilteredByJobActive()
     {
-        await CreateJobWithJobRun(isActive: false);
         await CreateJobWithJobRun(isActive: true);
         await CreateJobWithJobRun(isActive: true);
+        var jobId = (await CreateJobWithJobRun(isActive: true)).JobId;
+        await HttpClientHelper.PatchJob(
+            _client, 
+            new UpdateJobPartialRequest { Id = jobId, IsActive = false });
 
         var url = $"{Constant.JobRunsBaseEndpoint}?active=true";
         
