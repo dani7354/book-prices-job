@@ -18,22 +18,8 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [ProducesResponseType<IList<JobRunListItemDto>>(StatusCodes.Status200OK)]
     public async Task<IActionResult> JobRuns([FromQuery] JobRunListRequest jobRunListRequest)
     {
-        var jobRunStatuses = jobRunListRequest.Status?
-            .Select(s => s.SafelyConvertToEnum<JobRunStatus>())
-            .Where(p => p != null)
-            .Select(p => p!.Value);
-
-        var jobRunPriorities = jobRunListRequest.Priority?
-            .Select(p => p.SafelyConvertToEnum<JobRunPriority>())
-            .Where(p => p != null)
-            .Select(p => p!.Value);
-
-        var jobRuns = await jobService.FilterJobRuns(
-            jobRunListRequest.Active,
-            jobRunListRequest.Limit,
-            jobRunListRequest.JobId, 
-            jobRunStatuses, 
-            jobRunPriorities);
+        var jobRunFilter = JobRunMapper.MapFilterRequestToFilter(jobRunListRequest);
+        var jobRuns = await jobService.FilterJobRuns(jobRunFilter);
         
         var jobRunDtos = JobRunMapper.MapToListDto(jobRuns);
 

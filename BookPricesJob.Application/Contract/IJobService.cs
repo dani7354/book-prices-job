@@ -1,3 +1,4 @@
+using BookPricesJob.Application.Service;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Application.Contract;
@@ -13,12 +14,7 @@ public interface IJobService
 
     // JobRun
     Task<IList<JobRun>> GetJobRuns();
-    Task<IList<(JobRun, Job)>> FilterJobRuns(
-        bool? active,
-        int? limit,
-        string? jobId, 
-        IEnumerable<JobRunStatus>? statuses,
-        IEnumerable<JobRunPriority>? priorities);
+    Task<IList<(JobRun, Job)>> FilterJobRuns(JobRunFilter filter);
     Task<JobRun?> GetJobRunById(string id);
     Task<string> CreateJobRun(JobRun jobRun);
     Task UpdateJobRun(JobRun jobRun);

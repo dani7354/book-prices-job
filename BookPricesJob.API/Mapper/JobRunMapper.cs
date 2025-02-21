@@ -1,4 +1,6 @@
+using BookPricesJob.API.Extension;
 using BookPricesJob.API.Model;
+using BookPricesJob.Application.Service;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.API.Mapper;
@@ -78,5 +80,30 @@ public static class JobRunMapper
                 .ToList(),
             jobRun.ErrorMessage
         );
+    }
+
+    public static JobRunFilter MapFilterRequestToFilter(JobRunListRequest listRequest)
+    {
+        var jobRunStatuses = listRequest.Status?
+            .Select(s => s.SafelyConvertToEnum<JobRunStatus>())
+            .Where(p => p != null)
+            .Select(p => p!.Value);
+
+        var jobRunPriorities = listRequest.Priority?
+            .Select(p => p.SafelyConvertToEnum<JobRunPriority>())
+            .Where(p => p != null)
+            .Select(p => p!.Value);
+
+        var sortBy = listRequest.SortBy?.SafelyConvertToEnum<SortByOption>() ?? SortByOption.Updated;
+        var sortDirection = listRequest.SortDirection?.SafelyConvertToEnum<SortDirection>() ?? SortDirection.Ascending;
+        
+        return new JobRunFilter(
+            listRequest.Active,
+            listRequest.Limit,
+            listRequest.JobId,
+            jobRunPriorities,
+            jobRunStatuses,
+            sortBy,
+            sortDirection);
     }
 }
