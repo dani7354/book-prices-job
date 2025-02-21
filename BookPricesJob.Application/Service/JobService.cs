@@ -187,7 +187,9 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
             filter.Limit, 
             filter.JobId, 
             filter.Statuses, 
-            filter.Priorities);
+            filter.Priorities,
+            filter.SortBy,
+            filter.SortDirection);
         
         var jobsForJobRuns = new Dictionary<string, Job>();
         foreach (var id in jobRuns.Select(x => x.JobId).Distinct())

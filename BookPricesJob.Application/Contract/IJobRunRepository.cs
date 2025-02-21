@@ -1,3 +1,5 @@
+using BookPricesJob.Application.Service;
+
 namespace BookPricesJob.Application.Contract;
 
 using BookPricesJob.Common.Domain;
@@ -9,5 +11,7 @@ public interface IJobRunRepository : IRepository<JobRun>
         int? limit,
         string? jobId,
         IEnumerable<JobRunStatus>? statuses,
-        IEnumerable<JobRunPriority>? priorities);
+        IEnumerable<JobRunPriority>? priorities,
+        SortByOption sortBy,
+        SortDirection sortDirection);
 }
