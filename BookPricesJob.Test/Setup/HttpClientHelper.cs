@@ -31,6 +31,19 @@ public static class HttpClientHelper
 
         return response;
     }
+
+    public static async Task<HttpResponseMessage> PatchJobRun(HttpClient client, UpdateJobRunPartialRequest update)
+    {
+        var content = new StringContent(
+            JsonSerializer.Serialize(update),
+            Encoding.UTF8,
+            "application/json");
+
+        var response = await client.PatchAsync($"{Constant.JobRunsBaseEndpoint}/{update.JobRunId}", content);
+        response.EnsureSuccessStatusCode();
+
+        return response;
+    }
     
     public static StringContent CreateStringPayload<T>(T payload)
     {

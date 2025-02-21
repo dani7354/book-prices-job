@@ -202,7 +202,6 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         return jobRuns
             .Where(x => jobsForJobRuns.ContainsKey(x.JobId))
             .Select(x => (x, jobsForJobRuns[x.JobId]))
-            .OrderByDescending(x => x.x.Updated)
             .ToList();
     }
 

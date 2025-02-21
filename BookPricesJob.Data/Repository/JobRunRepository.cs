@@ -11,6 +11,21 @@ namespace BookPricesJob.Data.Repository;
 
 public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
 {
+    private static readonly IDictionary<string, int > PriorityEnumValues = new Dictionary<string, int>
+    {
+        { JobRunPriority.Low.ToString(), (int) JobRunPriority.Low },
+        { JobRunPriority.Normal.ToString(), (int) JobRunPriority.Normal },
+        { JobRunPriority.High.ToString(), (int) JobRunPriority.High }
+    };
+
+    private static readonly IDictionary<string, int> StatusEnumValues = new Dictionary<string, int>
+    {
+        { JobRunStatus.Running.ToString(), (int) JobRunStatus.Running },
+        { JobRunStatus.Pending.ToString(), (int) JobRunStatus.Pending },
+        { JobRunStatus.Failed.ToString(), (int) JobRunStatus.Failed },
+        { JobRunStatus.Completed.ToString(), (int) JobRunStatus.Completed }
+    };
+    
     public async Task<string> Add(JobRun jobDomain)
     {
         try
@@ -18,7 +33,7 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
             var newEntity = JobRunMapper.MapToNewEntity(jobDomain);
             await dbContext.JobRun.AddAsync(newEntity);
 
-            return newEntity.Id.ToString();
+            return newEntity.Id;
         }
         catch (MySqlException e)
         {
@@ -74,7 +89,7 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
         }
     }
 
-    private IQueryable<Data.Entity.JobRun> ApplyFilter(
+    private static IQueryable<Data.Entity.JobRun> ApplyFilter(
         IQueryable<Data.Entity.JobRun> query,
         bool? active, 
         string? jobId, 
@@ -102,21 +117,21 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
         return query;
     }
     
-    private IQueryable<Data.Entity.JobRun> ApplySorting(IQueryable<Data.Entity.JobRun> query, SortByOption sortBy, SortDirection sortDirection)
+    private static IQueryable<Data.Entity.JobRun> ApplySorting(IQueryable<Data.Entity.JobRun> query, SortByOption sortBy, SortDirection sortDirection)
     {
         switch (sortBy)
         {
             case SortByOption.Priority when sortDirection == SortDirection.Ascending:
-                query = query.OrderBy(x => x.Priority);
+                query = query.OrderBy(x => PriorityEnumValues[x.Priority]);
                 break;
             case SortByOption.Priority when sortDirection == SortDirection.Descending:
-                query = query.OrderByDescending(x => x.Priority);
+                query = query.OrderByDescending(x => PriorityEnumValues[x.Priority]);
                 break;
             case SortByOption.Status when sortDirection == SortDirection.Ascending:
-                query = query.OrderBy(x => x.Status);
+                query = query.OrderBy(x => StatusEnumValues[x.Status]);
                 break;
             case SortByOption.Status when sortDirection == SortDirection.Descending:
-                query = query.OrderByDescending(x => x.Status);
+                query = query.OrderByDescending(x => StatusEnumValues[x.Status]);
                 break;
             case SortByOption.Updated when sortDirection == SortDirection.Ascending:
                 query = query.OrderBy(x => x.Updated);
