@@ -12,6 +12,7 @@ public static class JobMapper
             IsActive: createRequest.IsActive ?? false,
             Name: createRequest.Name,
             Description: createRequest.Description,
+            Version: Guid.NewGuid().ToString(),
             Created: null,
             JobRuns: []
         );
@@ -23,7 +24,8 @@ public static class JobMapper
             { 
                 IsActive = updateRequest.IsActive ?? false, 
                 Name = updateRequest.Name, 
-                Description = updateRequest.Description 
+                Description = updateRequest.Description,
+                Version = updateRequest.Version,
             };
     }
 
@@ -45,6 +47,7 @@ public static class JobMapper
             IsActive: job.IsActive,
             Name: job.Name,
             Description: job.Description,
+            Version: job.Version,
             Created: job.Created!.Value,
             JobRuns: job.JobRuns
                 .Select(x => JobRunMapper.MapToListItemDto(x, job.Name))

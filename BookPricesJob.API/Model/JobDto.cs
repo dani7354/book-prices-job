@@ -5,6 +5,7 @@ public record JobDto(
     bool IsActive,
     string Name,
     string Description,
+    string Version,
     DateTime Created,
     IList<JobRunListItemDto> JobRuns
 );

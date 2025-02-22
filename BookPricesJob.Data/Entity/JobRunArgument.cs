@@ -18,7 +18,4 @@ public class JobRunArgument
     [DeleteBehavior(DeleteBehavior.Cascade)]
     public JobRun JobRun { get; init; } = null!;
     public List<JobRunArgumentValue> Values { get; set; } = [];
-
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = [];
 }

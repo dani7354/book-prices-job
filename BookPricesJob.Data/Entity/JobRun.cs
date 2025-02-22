@@ -26,6 +26,7 @@ public class JobRun
     public Job Job { get; set; } = null!;
     public List<JobRunArgument> Arguments { get; } = [];
 
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = [];
+    [ConcurrencyCheck] 
+    [MaxLength(36)] 
+    public string Version { get; set; } = null!;
 }

@@ -6,7 +6,11 @@ public record JobRunDto(
     string JobName,
     string Priority,
     string Status,
+    string Version,
     DateTime Created,
     DateTime Updated,
     List<JobRunArgumentDto> Arguments,
-    string? ErrorMessage);
+    string? ErrorMessage)
+{
+   
+}

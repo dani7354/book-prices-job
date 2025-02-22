@@ -1,6 +1,6 @@
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Exception;
-using BookPricesJob.Application.Mapper;
+using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;

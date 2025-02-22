@@ -97,8 +97,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [Fact]
     public async Task UpdateFull_ExistingJob_ReturnsSuccess()
     {
-        var jobPayload = TestData.CreateJobRequestOne;
-
+        var jobPayload = TestData.GetCreateJobRequest();
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
         var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
@@ -107,6 +106,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
             Id = job!.Id,
             Name = "Test Job 1 Updated",
             Description = "Test Job 1 described here Updated",
+            Version = job.Version,
             IsActive = false
         };
 
@@ -119,16 +119,16 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [Fact]
     public async Task UpdateFull_InvalidJobId_ReturnsBadRequest()
     {
-         var jobPayload = TestData.CreateJobRequestOne;
-
+        var jobPayload = TestData.GetCreateJobRequest();
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
-         var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+        var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
         var jobUpdatePayload = new UpdateJobFullRequest()
         {
             Id = Guid.NewGuid().ToString(),
             Name = job!.Name,
             Description = job.Description,
+            Version = job.Version,
             IsActive = false
         };
 
@@ -143,12 +143,17 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [MemberData(nameof(PartialUpdateRequests))]
     public async Task UpdatePartial_ExistingJob_ReturnsSuccess(UpdateJobPartialRequest jobUpdatePayload)
     {
-        var jobPayload = TestData.CreateJobRequestOne;
-
+        var jobPayload = TestData.GetCreateJobRequest();
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
         var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
-        jobUpdatePayload.Id = job!.Id;
+        jobUpdatePayload = TestData.GetUpdatePartialRequest(
+            job!.Id, 
+            job.Version, 
+            name: jobUpdatePayload.Name,
+            description: jobUpdatePayload.Description,
+            isActive: jobUpdatePayload.IsActive);
+        
         var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
 
         var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job!.Id}", content);
@@ -159,8 +164,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
     [Fact]
     public async Task Delete_ExistingJob_ReturnsSuccess()
     {
-        var jobPayload = TestData.CreateJobRequestOne;
-
+        var jobPayload = TestData.GetCreateJobRequest();
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
         var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
