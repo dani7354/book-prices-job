@@ -24,7 +24,8 @@ public static class JobMapper
             { 
                 IsActive = updateRequest.IsActive ?? false, 
                 Name = updateRequest.Name, 
-                Description = updateRequest.Description 
+                Description = updateRequest.Description,
+                Version = updateRequest.Version,
             };
     }
 

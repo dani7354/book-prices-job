@@ -98,6 +98,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         if (job is null)
             return NotFound();
 
+        job = job with { Version = jobUpdateRequest.Version };
         if (jobUpdateRequest.IsActive.HasValue)
             job = job with { IsActive = jobUpdateRequest.IsActive.Value };
         if (jobUpdateRequest.Name != null)

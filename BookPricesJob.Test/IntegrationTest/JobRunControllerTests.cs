@@ -79,13 +79,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         JobRunPriority priority = JobRunPriority.Normal,
         bool isActive = true)
     {
-        var jobRequest = new CreateJobRequest
-        {
-            Name = TestData.CreateJobRequestOne.Name,
-            Description = TestData.CreateJobRequestOne.Description,
-            IsActive = isActive
-        };
-        
+        var jobRequest = TestData.GetCreateJobRequest(isActive: isActive);
         var responseCreateJob = await HttpClientHelper.PostJob(_client, jobRequest);
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
@@ -170,10 +164,10 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     {
         await CreateJobWithJobRun(isActive: true);
         await CreateJobWithJobRun(isActive: true);
-        var jobId = (await CreateJobWithJobRun(isActive: true)).JobId;
+        var job = await CreateJobWithJobRun(isActive: true);
         await HttpClientHelper.PatchJob(
             _client, 
-            new UpdateJobPartialRequest { Id = jobId, IsActive = false });
+            TestData.GetUpdatePartialRequest(id: job.JobId, version: job.Version, isActive: false));
 
         var url = $"{Constant.JobRunsBaseEndpoint}?active=true";
         
@@ -286,7 +280,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     [Fact]
     public async Task Create_NewJobRun_ReturnsSuccessAndCreatedObject()
     {
-        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.CreateJobRequestOne);
+        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.GetCreateJobRequest());
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
         var jobId = jobDto!.Id;
