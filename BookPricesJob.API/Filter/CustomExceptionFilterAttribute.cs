@@ -1,6 +1,7 @@
 using BookPricesJob.Common.Exception;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.API.Filter;
 
@@ -15,6 +16,7 @@ public class CustomExceptionFilterAttribute(ILogger<CustomExceptionFilterAttribu
             NotFoundException => StatusCodes.Status404NotFound,
             UpdateFailedException => StatusCodes.Status400BadRequest,
             DatabaseException => StatusCodes.Status500InternalServerError,
+            DbUpdateConcurrencyException => StatusCodes.Status412PreconditionFailed,
 
             _ => StatusCodes.Status500InternalServerError
         };

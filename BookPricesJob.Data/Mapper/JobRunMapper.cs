@@ -40,7 +40,7 @@ public static class JobRunMapper
         jobRunEntity.Priority = jobRunDomain.Priority.ToString();
         jobRunEntity.Updated = DateTime.UtcNow;
         jobRunEntity.ErrorMessage = jobRunDomain.ErrorMessage;
-        jobRunEntity.Version = jobRunDomain.Version;
+        jobRunEntity.Version = Guid.NewGuid().ToString();
 
         var arguments = jobRunDomain.Arguments.Select(x => new Entity.JobRunArgument
             {

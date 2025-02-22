@@ -7,21 +7,6 @@ public static class TestData
     private const string JobName = "TestJob_1";
     private const string JobDescription = "TestJob_1_Description";
     private const bool IsActive = true;
-    
-    public static UpdateJobFullRequest GetUpdateJobFullRequest(
-        string version,
-        string name = JobName,
-        string description = JobDescription,
-        bool isActive = IsActive)
-    {
-        return new UpdateJobFullRequest
-        {
-            Name = name,
-            Description = description,
-            Version = version,
-            IsActive = isActive
-        };
-    }
 
     public static CreateJobRequest GetCreateJobRequest(
         string name = JobName,
@@ -49,6 +34,23 @@ public static class TestData
             Version = version,
             Name = name,
             Description = description,
+            IsActive = isActive
+        };
+    }
+    
+    public static UpdateJobFullRequest GetUpdateJobFullRequest(
+        string id,
+        string version,
+        string name = JobName,
+        string description = JobDescription,
+        bool isActive = IsActive)
+    {
+        return new UpdateJobFullRequest
+        {
+            Id = id,
+            Name = name,
+            Description = description,
+            Version = version,
             IsActive = isActive
         };
     }

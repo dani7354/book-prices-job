@@ -30,7 +30,7 @@ public static class JobMapper
         jobEntity.IsActive = jobUpdated.IsActive;
         jobEntity.Name = jobUpdated.Name;
         jobEntity.Description = jobUpdated.Description;
-        jobEntity.Version = jobUpdated.Version;
+        jobEntity.Version = Guid.NewGuid().ToString();
         jobEntity.Created = jobUpdated.Created ?? DateTime.Now;
 
         return jobEntity;

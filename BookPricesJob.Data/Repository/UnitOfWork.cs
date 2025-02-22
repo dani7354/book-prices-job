@@ -1,5 +1,6 @@
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Application.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data.Repository;
 
@@ -19,7 +20,7 @@ public class UnitOfWork : IUnitOfWork
     }
 
     public Task<int> Complete()
-    {
+    { 
         return _dataContext.SaveChangesAsync();
     }
 }

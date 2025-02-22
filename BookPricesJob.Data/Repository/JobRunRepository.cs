@@ -3,7 +3,6 @@ using BookPricesJob.Common.Exception;
 using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Application.Service;
 
@@ -28,33 +27,19 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
     
     public async Task<string> Add(JobRun jobDomain)
     {
-        try
-        {
-            var newEntity = JobRunMapper.MapToNewEntity(jobDomain);
-            await dbContext.JobRun.AddAsync(newEntity);
+        var newEntity = JobRunMapper.MapToNewEntity(jobDomain);
+        await dbContext.JobRun.AddAsync(newEntity);
 
-            return newEntity.Id;
-        }
-        catch (MySqlException e)
-        {
-            throw new DatabaseException(e);
-        }
+        return newEntity.Id;
     }
 
     public async Task Delete(string id)
     {
-        try
-        {
-            var jobRunEntity = await dbContext.JobRun
-                .FirstOrDefaultAsync(x => x.Id == id) ??
-                    throw new NotFoundException(id: id);
+        var jobRunEntity = await dbContext.JobRun
+            .FirstOrDefaultAsync(x => x.Id == id) ??
+                throw new NotFoundException(id: id);
 
-            dbContext.JobRun.Remove(jobRunEntity);
-        }
-        catch (MySqlException e)
-        {
-            throw new DatabaseException(e);
-        }
+        dbContext.JobRun.Remove(jobRunEntity);
     }
 
     public async Task<IList<JobRun>> FilterBy(
@@ -66,27 +51,20 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
         SortByOption sortBy,
         SortDirection sortDirection)
     {
-        try
-        {
-            var query = dbContext.JobRun.AsNoTracking();
-            query = ApplyFilter(query, active, jobId, statuses, priorities);
-            query = ApplySorting(query, sortBy, sortDirection);
-            
-            if (limit is not null)
-                query = query.Take(limit.Value);
-            
-            query = query
-                .Include(j => j.Arguments)
-                .ThenInclude(x => x.Values);
-            
-            var jobRuns = await query.ToListAsync();
+        var query = dbContext.JobRun.AsNoTracking();
+        query = ApplyFilter(query, active, jobId, statuses, priorities);
+        query = ApplySorting(query, sortBy, sortDirection);
+        
+        if (limit is not null)
+            query = query.Take(limit.Value);
+        
+        query = query
+            .Include(j => j.Arguments)
+            .ThenInclude(x => x.Values);
+        
+        var jobRuns = await query.ToListAsync();
 
-            return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
-        }
-        catch (MySqlException e)
-        {
-            throw new DatabaseException(e);
-        }
+        return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
     }
 
     private static IQueryable<Data.Entity.JobRun> ApplyFilter(
@@ -146,64 +124,39 @@ public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
 
     public async Task<IList<JobRun>> GetAll()
     {
-        try
-        {
-            var jobRuns = await dbContext.JobRun
-                .AsNoTracking()
-                .Include(j => j.Arguments)
-                    .ThenInclude(x => x.Values)
-                .OrderByDescending(j => j.Priority)
-                    .ThenBy(j => j.Updated)
-                .ToListAsync();
+        var jobRuns = await dbContext.JobRun
+            .AsNoTracking()
+            .Include(j => j.Arguments)
+                .ThenInclude(x => x.Values)
+            .OrderByDescending(j => j.Priority)
+                .ThenBy(j => j.Updated)
+            .ToListAsync();
 
-            return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
-        }
-        catch (MySqlException e)
-        {
-            throw new DatabaseException(e);
-        }
+        return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
     }
 
     public async Task<JobRun?> GetById(string id)
     {
-        try
-        {
-            var jobRun = await dbContext.JobRun
-                .AsNoTracking()
-                .Include(j => j.Arguments)
-                    .ThenInclude(x => x.Values)
-                .FirstOrDefaultAsync(j => j.Id == id);
+        var jobRun = await dbContext.JobRun
+            .AsNoTracking()
+            .Include(j => j.Arguments)
+                .ThenInclude(x => x.Values)
+            .FirstOrDefaultAsync(j => j.Id == id);
 
-            return jobRun is null ? null : JobRunMapper.MapToDomain(jobRun);
-        }
-        catch (MySqlException e)
-        {
-            throw new DatabaseException(e);
-        }
+        return jobRun is null ? null : JobRunMapper.MapToDomain(jobRun);
     }
 
     public async Task Update(JobRun jobRunDomain)
     {
-        try
-        {
-            var existingEntity = await dbContext.JobRun
-                .Include(j => j.Arguments)
-                .FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id)
-                ?? throw new NotFoundException(id: jobRunDomain.Id!);
+        var existingEntity = await dbContext.JobRun
+            .Include(j => j.Arguments)
+            .FirstOrDefaultAsync(x => x.Id == jobRunDomain.Id)
+            ?? throw new NotFoundException(id: jobRunDomain.Id!);
 
-            dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
-            var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
-
-            dbContext.JobRun.Update(updatedJobRun);
-
-        }
-        catch (DbUpdateConcurrencyException e)
-        {
-            throw new UpdateFailedException(e.Message);
-        }
-        catch (MySqlException e)
-        {
-            throw new DatabaseException(e);
-        }
+        dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
+        var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
+        
+        dbContext.Entry(existingEntity).Property(x => x.Version).OriginalValue = jobRunDomain.Version;
+        dbContext.JobRun.Update(updatedJobRun);
     }
 }
