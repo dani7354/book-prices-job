@@ -7,5 +7,6 @@ public record Job(
     bool IsActive,
     string Name,
     string Description,
+    string Version,
     DateTime? Created,
     IList<JobRun> JobRuns);

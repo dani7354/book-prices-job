@@ -19,8 +19,8 @@ public static class JobRunMapper
             Arguments: createRequest.Arguments
                 .Select(x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values))
                 .ToList(),
-            ErrorMessage: null
-        );
+            ErrorMessage: null,
+            Version: Guid.NewGuid().ToString());
     }
 
     public static JobRun MapToDomain(
@@ -37,7 +37,8 @@ public static class JobRunMapper
             Arguments: updateRequest.Arguments
                 .Select(x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values))
                 .ToList(),
-            ErrorMessage: updateRequest.ErrorMessage
+            ErrorMessage: updateRequest.ErrorMessage,
+            Version: updateRequest.Version
         );
     }
 
@@ -56,6 +57,7 @@ public static class JobRunMapper
             jobName,
             jobRun.Priority.ToString(),
             jobRun.Status.ToString(),
+            jobRun.Version!,
             jobRun.Created,
             jobRun.Updated,
             jobRun.Arguments
@@ -73,6 +75,7 @@ public static class JobRunMapper
             jobName,
             jobRun.Priority.ToString(),
             jobRun.Status.ToString(),
+            jobRun.Version!,
             jobRun.Created,
             jobRun.Updated,
             jobRun.Arguments.Select(

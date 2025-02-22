@@ -123,6 +123,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         var newPriopriority = updateJobRunRequest.Priority;
         var newStatus = updateJobRunRequest.Status;
         var arguments = updateJobRunRequest.Arguments;
+        var rowVersion = updateJobRunRequest.Version;
 
         if (!string.IsNullOrEmpty(updateJobRunRequest.ErrorMessage))
             jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };
@@ -137,6 +138,8 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
                 x => new JobRunArgument(Id: null, x.Name, x.Type, x.Values))
                 .ToList() 
             };
+        
+        jobRun = jobRun with { Version = rowVersion };
 
         await jobService.UpdateJobRun(jobRun);
         logger.LogInformation("JobRun with id {JobRunId} updated by {User}", id, User.Identity!.Name);

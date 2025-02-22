@@ -15,6 +15,7 @@ public class Job
     public DateTime Created { get; set; }
     public List<JobRun> JobRuns { get; } = [];
 
-    [Timestamp]
-    public byte[] RowVersion { get; set; } = [];
+    [ConcurrencyCheck]
+    [MaxLength(36)]
+    public string Version { get; set; } = null!;
 }

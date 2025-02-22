@@ -220,43 +220,48 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     public async Task JobRuns_Ordering_ReturnsSuccessListOdJobRunsOrderedByStatusAsc()
     {
         var jobRunDto = await CreateJobWithJobRun();
-        var jobRunId = (await CreateJobRunForJob(jobRunDto.JobId)).Id;
+        var jobRun = await CreateJobRunForJob(jobRunDto.JobId);
         await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Running.ToString()
         });
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId)).Id;
+        jobRun = await CreateJobRunForJob(jobRunDto.JobId);
         await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Failed.ToString()
         });
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low)).Id;
+        jobRun = await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
         await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Failed.ToString()
         });
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High)).Id;
+        jobRun = await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
         await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Pending.ToString()
         });
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High)).Id;
+        jobRun = await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
         await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Completed.ToString()
         });
 
@@ -330,7 +335,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             JobRunId = jobRunDto.Id,
             JobId = jobRunDto.JobId,
             Priority = newPriority.ToString(),
-            Status = newStatus.ToString()
+            Status = newStatus.ToString(),
+            Version = jobRunDto.Version
         };
 
         var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
@@ -361,7 +367,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             JobId = jobRunDto.JobId,
             Priority = jobRunDto.Priority,
             Status = jobRunDto.Status,
-            Arguments = arguments
+            Arguments = arguments,
+            Version = jobRunDto.Version
         };
 
         var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
@@ -422,7 +429,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         {
             JobRunId = jobRunDto.Id,
             Status = newStatus.ToString(),
-            Priority = newPriority.ToString()
+            Priority = newPriority.ToString(),
+            Version = jobRunDto.Version
         };
 
         var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
