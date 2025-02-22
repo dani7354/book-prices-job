@@ -15,7 +15,7 @@ public static class TestData
     {
         return new CreateJobRequest
         {
-            Name = JobName,
+            Name = name,
             Description = description,
             IsActive = isActive
         };
