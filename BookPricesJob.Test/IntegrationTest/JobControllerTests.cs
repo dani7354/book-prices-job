@@ -1,18 +1,18 @@
 using System.Net;
 using System.Net.Http.Json;
 using BookPricesJob.API.Model;
-using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class JobControllerTests
 {
     private readonly HttpClient _client;
 
-    public JobControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+    public JobControllerTests()
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
+        var factory = new CustomWebApplicationFactory<Startup>();
         _client = factory.CreateClient();
     }
 
@@ -175,7 +175,7 @@ public class JobControllerTests : DatabaseFixture, IClassFixture<CustomWebApplic
         
         var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
 
-        var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job!.Id}", content);
+        var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job.Id}", content);
 
         Assert.Equal(HttpStatusCode.OK, responseUpdateJob.StatusCode);
     }

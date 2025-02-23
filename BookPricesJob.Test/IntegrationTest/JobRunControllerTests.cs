@@ -1,19 +1,19 @@
 using System.Net;
 using System.Net.Http.Json;
 using BookPricesJob.API.Model;
-using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class JobRunControllerTests
 {
     private readonly HttpClient _client;
 
-    public JobRunControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+    public JobRunControllerTests()
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
+        var factory = new CustomWebApplicationFactory<Startup>();
         _client = factory.CreateClient();
     }
 

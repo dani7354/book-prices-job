@@ -1,26 +1,32 @@
-using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
 using BookPricesJob.API.Model;
 using System.Net;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class AuthControllerTests
 {
     private const string RegisterEndpoint = $"{Constant.AuthBaseEndpoint}/register";
     private const string LoginEndpoint = $"{Constant.AuthBaseEndpoint}/login";
+
+    private readonly CustomWebApplicationFactory<Startup> _factory;
     
-    private readonly HttpClient _client;
-    public AuthControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+    public AuthControllerTests()
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
-        _client = factory.CreateClient();
+        _factory = new CustomWebApplicationFactory<Startup>();
     }
 
-    private static HttpClient CreateClientNewUsersAllowed()
+    private HttpClient CreateClientNewUsersAllowed()
     {
         Environment.SetEnvironmentVariable(API.Constant.AllowNewUsers, "true");
-        return new CustomWebApplicationFactory<Startup>().CreateClient();
+        return _factory.CreateClient();
+    }
+
+    private HttpClient CreateClientNewUsersNotAllowed()
+    {
+        Environment.SetEnvironmentVariable(API.Constant.AllowNewUsers, "false");
+        return _factory.CreateClient();
     }
 
     [Fact]
@@ -45,6 +51,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
     [Fact]
     public async Task Register_NewUsersDeactivated_ReturnsBadRequest()
     {
+        var client = CreateClientNewUsersNotAllowed();
         var password = "Jens'GodePassword123.";
         var userRegisterRequest = new UserRegisterRequest()
         {
@@ -55,7 +62,7 @@ public class AuthControllerTests : DatabaseFixture, IClassFixture<CustomWebAppli
 
         var registerPayload = HttpClientHelper.CreateStringPayload(userRegisterRequest);
 
-        var registerResponse = await _client.PostAsync(RegisterEndpoint, registerPayload);
+        var registerResponse = await client.PostAsync(RegisterEndpoint, registerPayload);
 
         Assert.Equal(HttpStatusCode.BadRequest, registerResponse.StatusCode);
     }
