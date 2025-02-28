@@ -14,8 +14,6 @@ public class CustomExceptionFilterAttribute(ILogger<CustomExceptionFilterAttribu
         var statusCode = context.Exception switch
         {
             NotFoundException => StatusCodes.Status404NotFound,
-            UpdateFailedException => StatusCodes.Status400BadRequest,
-            DatabaseException => StatusCodes.Status500InternalServerError,
             DbUpdateConcurrencyException => StatusCodes.Status412PreconditionFailed,
 
             _ => StatusCodes.Status500InternalServerError
