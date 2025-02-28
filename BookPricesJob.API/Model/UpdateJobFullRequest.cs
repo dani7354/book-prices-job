@@ -20,5 +20,4 @@ public class UpdateJobFullRequest
     [Required]
     [VersionFormat]
     public string Version { get; init; } = null!;
-    
 }
