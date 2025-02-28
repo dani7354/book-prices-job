@@ -7,6 +7,7 @@ public class UpdateJobRunPartialRequest
 {
     [Required]
     public string JobRunId { get; init; } = null!;
+    
     [Required]
     [VersionFormat]
     public string Version { get; init; } = null!;

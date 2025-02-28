@@ -62,7 +62,6 @@ public class JobControllerTests
     public async Task Create_NewJob_ReturnsSuccessAndCreatedObject()
     {
         var jobPayload = TestData.GetCreateJobRequest();
-
         var content = HttpClientHelper.CreateStringPayload(jobPayload);
 
         var responseCreateJob = await _client.PostAsync(Constant.JobsBaseEndpoint, content);
