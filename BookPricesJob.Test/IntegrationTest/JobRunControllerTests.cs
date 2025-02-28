@@ -115,7 +115,7 @@ public class JobRunControllerTests
         Assert.Empty(jobRuns);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
@@ -134,7 +134,7 @@ public class JobRunControllerTests
         Assert.Equal(4, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
@@ -159,7 +159,7 @@ public class JobRunControllerTests
         Assert.Equal(3, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
@@ -189,7 +189,7 @@ public class JobRunControllerTests
         Assert.Equal(2, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
@@ -216,7 +216,7 @@ public class JobRunControllerTests
         Assert.Equal(JobRunPriority.Low.ToString(), jobRuns.Last().Priority);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
@@ -287,7 +287,7 @@ public class JobRunControllerTests
         Assert.Equal(JobRunStatus.Running.ToString(), jobRuns.Last().Status);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
 
     [Fact]
@@ -310,7 +310,7 @@ public class JobRunControllerTests
 
         Assert.Equal(HttpStatusCode.Created, responseCreateJobRun.StatusCode);
         Assert.Equal(
-            "application/json; charset=utf-8",
+            Constant.ContentTypeValue,
             responseCreateJobRun.Content.Headers.ContentType?.ToString());
     }
 

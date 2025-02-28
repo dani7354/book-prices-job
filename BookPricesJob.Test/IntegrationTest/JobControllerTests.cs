@@ -55,7 +55,7 @@ public class JobControllerTests
         Assert.Empty(jobRuns);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class JobControllerTests
 
         Assert.Equal(HttpStatusCode.Created, responseCreateJob.StatusCode);
         Assert.Equal(
-            "application/json; charset=utf-8",
+            Constant.ContentTypeValue,
             responseCreateJob.Content.Headers.ContentType?.ToString());
     }
 
