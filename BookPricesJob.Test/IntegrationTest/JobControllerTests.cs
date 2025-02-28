@@ -23,7 +23,7 @@ public class JobControllerTests
             {
                 new UpdateJobPartialRequest()
                 {
-                    Name = "Test Job 1 Updated",
+                    Name = "UPDATED NAME 1",
                     IsActive = false
                 }
             },
@@ -31,7 +31,7 @@ public class JobControllerTests
             {
                 new UpdateJobPartialRequest()
                 {
-                    Name = "Test Job 1 Updated",
+                    Name = "UPDATED NAME 1",
                 }
             },
             new object[]
@@ -77,7 +77,7 @@ public class JobControllerTests
     {
         var jobRunPayload = new CreateJobRequest
         {
-            Name = "Test Job 1",
+            Name = "JOB NAME",
             IsActive = true
         };
 
@@ -142,7 +142,7 @@ public class JobControllerTests
             id: job!.Id, 
             version: Guid.NewGuid().ToString(), 
             isActive: false, 
-            name: "Some_New_Name_2");
+            name: "UPDATED NAME");
 
         var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
 
@@ -177,6 +177,27 @@ public class JobControllerTests
         var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job.Id}", content);
 
         Assert.Equal(HttpStatusCode.OK, responseUpdateJob.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdatePartial_InvalidVersion_ReturnsPreconditionsFailed()
+    {
+        var jobPayload = TestData.GetCreateJobRequest();
+        var responseCreateJob = await HttpClientHelper.PostJob(_client, jobPayload);
+        var job = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var jobUpdatePayload = TestData.GetUpdatePartialRequest(
+            id: job!.Id, 
+            version: Guid.NewGuid().ToString(), 
+            name: "UPDATED NAME",
+            description: "UPDATED DESCRIPTION",
+            isActive: true);
+        
+        var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
+
+        var responseUpdateJob = await _client.PatchAsync($"{Constant.JobsBaseEndpoint}/{job.Id}", content);
+
+        Assert.Equal(HttpStatusCode.PreconditionFailed, responseUpdateJob.StatusCode);
     }
 
     [Fact]
