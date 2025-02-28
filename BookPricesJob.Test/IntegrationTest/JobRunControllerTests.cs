@@ -475,6 +475,28 @@ public class JobRunControllerTests
         Assert.Equal(newStatus.ToString(), jobRunUpdated.Status);
         Assert.Equal(newPriority.ToString(), jobRunUpdated.Priority);
     }
+    
+    [Fact]
+    public async Task UpdatePartial_InvalidVersion_ReturnsPreconditionFailed()
+    {
+        var jobRunDto = await CreateJobWithJobRun(_client);
+
+        var updateJobRunPayload = new UpdateJobRunPartialRequest
+        {
+            JobRunId = jobRunDto.Id,
+            JobId = jobRunDto.JobId,
+            Priority = jobRunDto.Priority,
+            Status = jobRunDto.Status,
+            Version = Guid.NewGuid().ToString()
+        };
+
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
+        var responseUpdateJobRun = await _client.PatchAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
+            updateContent);
+        
+        Assert.Equal(HttpStatusCode.PreconditionFailed, responseUpdateJobRun.StatusCode);
+    }
 
     [Fact]
     public async Task Delete_JobRun_ReturnsSuccess()
