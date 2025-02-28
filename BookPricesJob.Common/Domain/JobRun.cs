@@ -10,5 +10,6 @@ public record JobRun(
     JobRunStatus Status,
     JobRunPriority Priority,
     IList<JobRunArgument> Arguments,
-    string? ErrorMessage
+    string? ErrorMessage,
+    string Version
 );

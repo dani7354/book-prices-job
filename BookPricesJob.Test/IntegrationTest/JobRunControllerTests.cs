@@ -1,19 +1,19 @@
 using System.Net;
 using System.Net.Http.Json;
 using BookPricesJob.API.Model;
-using BookPricesJob.Test.Fixture;
 using BookPricesJob.Test.Setup;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Test.IntegrationTest;
 
-public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class JobRunControllerTests
 {
     private readonly HttpClient _client;
 
-    public JobRunControllerTests(CustomWebApplicationFactory<Startup> factory) : base(factory)
+    public JobRunControllerTests()
     {
         EnvironmentHelper.SetNecessaryEnvironmentVariables();
+        var factory = new CustomWebApplicationFactory<Startup>();
         _client = factory.CreateClient();
     }
 
@@ -56,7 +56,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         ],
     ];
 
-    private async Task<JobRunDto> CreateJobRunForJob(
+    private static async Task<JobRunDto> CreateJobRunForJob(
+        HttpClient client,
         string jobId,
         JobRunPriority priority = JobRunPriority.Normal)
     {
@@ -68,25 +69,21 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
 
-        var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        var responseCreateJobRun = await client.PostAsync(Constant.JobRunsBaseEndpoint, content);
         var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
         Assert.NotNull(jobRunDto);
 
         return jobRunDto;
     }
 
-    private async Task<JobRunDto> CreateJobWithJobRun(
+    private static async Task<JobRunDto> CreateJobWithJobRun(
+        HttpClient client,
         JobRunPriority priority = JobRunPriority.Normal,
         bool isActive = true)
     {
-        var jobRequest = new CreateJobRequest
-        {
-            Name = TestData.CreateJobRequestOne.Name,
-            Description = TestData.CreateJobRequestOne.Description,
-            IsActive = isActive
-        };
-        
-        var responseCreateJob = await HttpClientHelper.PostJob(_client, jobRequest);
+        var jobRequest = TestData.GetCreateJobRequest(isActive: isActive);
+        var responseCreateJob = await HttpClientHelper.PostJob(client, jobRequest);
+        responseCreateJob.EnsureSuccessStatusCode();
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
         var jobId = jobDto!.Id;
@@ -97,8 +94,9 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
-
-        var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        var responseCreateJobRun = await client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        responseCreateJob.EnsureSuccessStatusCode();
+        
         var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
         Assert.NotNull(jobRunDto);
 
@@ -117,19 +115,18 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Empty(jobRuns);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
     public async Task JobRuns_Filtering_ReturnsSuccessWithListOfJobRuns()
     {
-        var jobRunDto = await CreateJobWithJobRun();
-        await CreateJobRunForJob(jobRunDto.JobId);
-        await CreateJobRunForJob(jobRunDto.JobId);
-        await CreateJobRunForJob(jobRunDto.JobId);
+        var jobRunDto = await CreateJobWithJobRun(_client);
+        await CreateJobRunForJob(_client, jobRunDto.JobId);
+        await CreateJobRunForJob(_client, jobRunDto.JobId);
+        await CreateJobRunForJob(_client, jobRunDto.JobId);
         
         var response = await _client.GetAsync(Constant.JobRunsBaseEndpoint);
-
         response.EnsureSuccessStatusCode();
 
         var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
@@ -137,16 +134,16 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Equal(4, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
     public async Task JobRuns_Filtering_ReturnsSuccessWithListOfJobRunsFilteredByPriorityAndJobId()
     {
-        var jobRunDto = await CreateJobWithJobRun();
-        await CreateJobRunForJob(jobRunDto.JobId);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
+        var jobRunDto = await CreateJobWithJobRun(_client);
+        await CreateJobRunForJob(_client, jobRunDto.JobId);
+        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
+        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
 
         var url = $"{Constant.JobRunsBaseEndpoint}";
         url += $"?jobId={jobRunDto.JobId}";
@@ -162,23 +159,29 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Equal(3, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
     public async Task JobRuns_Filtering_ReturnsSuccessWithListOfJobRunsFilteredByJobActive()
     {
-        await CreateJobWithJobRun(isActive: true);
-        await CreateJobWithJobRun(isActive: true);
-        var jobId = (await CreateJobWithJobRun(isActive: true)).JobId;
-        await HttpClientHelper.PatchJob(
+        await CreateJobWithJobRun(_client, isActive: true);
+        await CreateJobWithJobRun(_client, isActive: true);
+        var jobRunDto  = await CreateJobWithJobRun(_client, isActive: true);
+       
+        var jobResponse = await _client.GetAsync($"{Constant.JobsBaseEndpoint}/{jobRunDto.JobId}");
+        jobResponse.EnsureSuccessStatusCode();
+        
+        var jobDto = await jobResponse.Content.ReadFromJsonAsync<JobDto>();
+        var responseUpdate = await HttpClientHelper.PatchJob(
             _client, 
-            new UpdateJobPartialRequest { Id = jobId, IsActive = false });
-
+            TestData.GetUpdatePartialRequest(id: jobDto!.Id, version: jobDto.Version, isActive: false));
+        
+        responseUpdate.EnsureSuccessStatusCode();
+        
         var url = $"{Constant.JobRunsBaseEndpoint}?active=true";
         
         var response = await _client.GetAsync(url);
-
         response.EnsureSuccessStatusCode();
 
         var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
@@ -186,18 +189,18 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Equal(2, jobRuns.Length);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
     public async Task JobRuns_Ordering_ReturnsSuccessListOdJobRunsOrderedByPriorityDesc()
     {
-        var jobRunDto = await CreateJobWithJobRun();
-        await CreateJobRunForJob(jobRunDto.JobId);
-        await CreateJobRunForJob(jobRunDto.JobId);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
-        await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High);
+        var jobRunDto = await CreateJobWithJobRun(_client);
+        await CreateJobRunForJob(_client, jobRunDto.JobId);
+        await CreateJobRunForJob(_client, jobRunDto.JobId);
+        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
+        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
 
         var url = $"{Constant.JobRunsBaseEndpoint}?sortBy=priority&sortDirection=descending";
         
@@ -213,57 +216,66 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Equal(JobRunPriority.Low.ToString(), jobRuns.Last().Priority);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
     
     [Fact]
     public async Task JobRuns_Ordering_ReturnsSuccessListOdJobRunsOrderedByStatusAsc()
     {
-        var jobRunDto = await CreateJobWithJobRun();
-        var jobRunId = (await CreateJobRunForJob(jobRunDto.JobId)).Id;
-        await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
+        var jobRunDto = await CreateJobWithJobRun(_client);
+        var jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId);
+        var responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Running.ToString()
         });
+        responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId)).Id;
-        await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
+        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId);
+        responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Failed.ToString()
         });
+        responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.Low)).Id;
-        await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
+        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
+        responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Failed.ToString()
         });
+        responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High)).Id;
-        await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
+        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Pending.ToString()
         });
+        responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRunId = (await CreateJobRunForJob(jobRunDto.JobId, JobRunPriority.High)).Id;
-        await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
+        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
-            JobRunId = jobRunId,
+            JobRunId = jobRun.Id,
+            Version = jobRun.Version,
             Status = JobRunStatus.Completed.ToString()
         });
+        responseUpdateJobRun.EnsureSuccessStatusCode();
 
         var url = $"{Constant.JobRunsBaseEndpoint}?sortBy=status&sortDirection=ascending";
         
         var response = await _client.GetAsync(url);
-
         response.EnsureSuccessStatusCode();
 
         var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
@@ -275,13 +287,14 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Equal(JobRunStatus.Running.ToString(), jobRuns.Last().Status);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
-        Assert.Equal("application/json; charset=utf-8", contentType);
+        Assert.Equal(Constant.ContentTypeValue, contentType);
     }
 
     [Fact]
     public async Task Create_NewJobRun_ReturnsSuccessAndCreatedObject()
     {
-        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.CreateJobRequestOne);
+        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.GetCreateJobRequest());
+        responseCreateJob.EnsureSuccessStatusCode();
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 
         var jobId = jobDto!.Id;
@@ -297,7 +310,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
 
         Assert.Equal(HttpStatusCode.Created, responseCreateJobRun.StatusCode);
         Assert.Equal(
-            "application/json; charset=utf-8",
+            Constant.ContentTypeValue,
             responseCreateJobRun.Content.Headers.ContentType?.ToString());
     }
 
@@ -307,7 +320,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         var jobRunPayload = new CreateJobRunRequest()
         {
             JobId = Guid.NewGuid().ToString(),
-            Priority = "Normal"
+            Priority = JobRunPriority.Normal.ToString()
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
@@ -323,14 +336,14 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         JobRunPriority newPriority,
         JobRunStatus newStatus)
     {
-        var jobRunDto = await CreateJobWithJobRun();
-
+        var jobRunDto = await CreateJobWithJobRun(_client);
         var updateJobRunPayload = new UpdateJobRunFullRequest()
         {
             JobRunId = jobRunDto.Id,
             JobId = jobRunDto.JobId,
             Priority = newPriority.ToString(),
-            Status = newStatus.ToString()
+            Status = newStatus.ToString(),
+            Version = jobRunDto.Version
         };
 
         var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
@@ -353,7 +366,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     public async Task UpdateFull_JobRunStatusArguments_ReturnsSuccessAndCorrectArguments(
         List<JobRunArgumentDto> arguments)
     {
-        var jobRunDto = await CreateJobWithJobRun();
+        var jobRunDto = await CreateJobWithJobRun(_client);
 
         var updateJobRunPayload = new UpdateJobRunFullRequest()
         {
@@ -361,7 +374,8 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
             JobId = jobRunDto.JobId,
             Priority = jobRunDto.Priority,
             Status = jobRunDto.Status,
-            Arguments = arguments
+            Arguments = arguments,
+            Version = jobRunDto.Version
         };
 
         var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
@@ -391,7 +405,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     [Fact]
     public async Task UpdateFull_InvalidJobId_ReturnsBadRequest()
     {
-        var jobRunDto = await CreateJobWithJobRun();
+        var jobRunDto = await CreateJobWithJobRun(_client);
 
         var updateJobRunPayload = new UpdateJobRunFullRequest()
         {
@@ -409,6 +423,28 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
 
         Assert.Equal(HttpStatusCode.BadRequest, responseUpdateJobRun.StatusCode);
     }
+    
+    [Fact]
+    public async Task UpdateFull_InvalidVersion_ReturnsPreconditionFailed()
+    {
+        var jobRunDto = await CreateJobWithJobRun(_client);
+
+        var updateJobRunPayload = new UpdateJobRunFullRequest()
+        {
+            JobRunId = jobRunDto.Id,
+            JobId = jobRunDto.JobId,
+            Priority = jobRunDto.Priority,
+            Status = jobRunDto.Status,
+            Version = Guid.NewGuid().ToString()
+        };
+
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
+        var responseUpdateJobRun = await _client.PutAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
+            updateContent);
+        
+        Assert.Equal(HttpStatusCode.PreconditionFailed, responseUpdateJobRun.StatusCode);
+    }
 
     [Theory]
     [MemberData(nameof(JobRunStatusesAndPriorities))]
@@ -416,17 +452,17 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         JobRunPriority newPriority,
         JobRunStatus newStatus)
     {
-        var jobRunDto = await CreateJobWithJobRun();
+        var jobRunDto = await CreateJobWithJobRun(_client);
 
         var updateJobRunPayload = new UpdateJobRunPartialRequest()
         {
             JobRunId = jobRunDto.Id,
             Status = newStatus.ToString(),
-            Priority = newPriority.ToString()
+            Priority = newPriority.ToString(),
+            Version = jobRunDto.Version
         };
 
         var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
-
         var responseUpdateJobRun = await _client.PatchAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
             updateContent);
@@ -439,11 +475,33 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
         Assert.Equal(newStatus.ToString(), jobRunUpdated.Status);
         Assert.Equal(newPriority.ToString(), jobRunUpdated.Priority);
     }
+    
+    [Fact]
+    public async Task UpdatePartial_InvalidVersion_ReturnsPreconditionFailed()
+    {
+        var jobRunDto = await CreateJobWithJobRun(_client);
+
+        var updateJobRunPayload = new UpdateJobRunPartialRequest
+        {
+            JobRunId = jobRunDto.Id,
+            JobId = jobRunDto.JobId,
+            Priority = jobRunDto.Priority,
+            Status = jobRunDto.Status,
+            Version = Guid.NewGuid().ToString()
+        };
+
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
+        var responseUpdateJobRun = await _client.PatchAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
+            updateContent);
+        
+        Assert.Equal(HttpStatusCode.PreconditionFailed, responseUpdateJobRun.StatusCode);
+    }
 
     [Fact]
     public async Task Delete_JobRun_ReturnsSuccess()
     {
-        var jobRunDto = await CreateJobWithJobRun();
+        var jobRunDto = await CreateJobWithJobRun(_client);
 
         var responseDeleteJobRun = await _client.DeleteAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}");
 
@@ -453,7 +511,7 @@ public class JobRunControllerTests : DatabaseFixture, IClassFixture<CustomWebApp
     [Fact]
     public async Task Delete_InvalidJobRunId_ReturnsBadRequest()
     {
-        await CreateJobWithJobRun();
+        await CreateJobWithJobRun(_client);
 
         var responseDeleteJobRun = await _client.DeleteAsync($"{Constant.JobRunsBaseEndpoint}/{Guid.NewGuid()}");
 

@@ -1,4 +1,3 @@
-using BookPricesJob.Application.Mapper;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Data.Mapper;
@@ -14,6 +13,7 @@ public static class JobMapper
             job.IsActive,
             job.Name,
             job.Description,
+            job.Version,
             job.Created,
             job.JobRuns
                 .OrderByDescending(x => x.Updated)
@@ -30,6 +30,7 @@ public static class JobMapper
         jobEntity.IsActive = jobUpdated.IsActive;
         jobEntity.Name = jobUpdated.Name;
         jobEntity.Description = jobUpdated.Description;
+        jobEntity.Version = Guid.NewGuid().ToString();
         jobEntity.Created = jobUpdated.Created ?? DateTime.Now;
 
         return jobEntity;

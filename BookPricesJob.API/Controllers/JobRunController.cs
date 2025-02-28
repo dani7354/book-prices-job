@@ -1,4 +1,3 @@
-using BookPricesJob.API.Extension;
 using BookPricesJob.API.Mapper;
 using BookPricesJob.API.Model;
 using BookPricesJob.Application.Contract;
@@ -75,6 +74,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status412PreconditionFailed)]
     public async Task<IActionResult> UpdateFull(
         [FromRoute] string id,
         [FromBody] UpdateJobRunFullRequest updateJobRunRequest)
@@ -107,6 +107,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status412PreconditionFailed)]
     public async Task<IActionResult> UpdatePartial(
         [FromRoute] string id,
         [FromBody] UpdateJobRunPartialRequest updateJobRunRequest)
@@ -120,10 +121,12 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (jobRun is null)
             return BadRequest();
         
+        var rowVersion = updateJobRunRequest.Version;
         var newPriopriority = updateJobRunRequest.Priority;
         var newStatus = updateJobRunRequest.Status;
         var arguments = updateJobRunRequest.Arguments;
-
+        
+        jobRun = jobRun with { Version = rowVersion };
         if (!string.IsNullOrEmpty(updateJobRunRequest.ErrorMessage))
             jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };
         if (newStatus is not null && Enum.TryParse<JobRunStatus>(newStatus, out var status))

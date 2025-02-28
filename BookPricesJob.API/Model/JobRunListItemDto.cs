@@ -6,6 +6,7 @@ public record JobRunListItemDto(
     string JobName,
     string Priority,
     string Status,
+    string Version,
     DateTime Created,
     DateTime Updated,
     IList<JobRunArgumentDto> Arguments);
