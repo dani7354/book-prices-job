@@ -63,6 +63,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status412PreconditionFailed)]
     public async Task<IActionResult> UpdateFull(
         [FromRoute] string id,
         [FromBody] UpdateJobFullRequest jobUpdateRequest)
@@ -87,6 +88,7 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status412PreconditionFailed)]
     public async Task<IActionResult> UpdatePartial(
         [FromRoute] string id,
         [FromBody] UpdateJobPartialRequest jobUpdateRequest)
