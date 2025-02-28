@@ -17,7 +17,7 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -231,11 +231,6 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                 {
                     b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>");
 
-                    b.Property<string>("ApiUserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.HasIndex("ApiUserId");
-
                     b.HasDiscriminator().HasValue("ApiUserClaim");
                 });
 
@@ -288,18 +283,6 @@ namespace BookPricesJob.Data.Migrations.IdentityDatabase
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiUserClaim", b =>
-                {
-                    b.HasOne("BookPricesJob.Data.Entity.ApiUser", null)
-                        .WithMany("UserClaims")
-                        .HasForeignKey("ApiUserId");
-                });
-
-            modelBuilder.Entity("BookPricesJob.Data.Entity.ApiUser", b =>
-                {
-                    b.Navigation("UserClaims");
                 });
 #pragma warning restore 612, 618
         }

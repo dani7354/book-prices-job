@@ -4,5 +4,4 @@ namespace BookPricesJob.Data.Entity;
 
 public class ApiUser : IdentityUser
 {
-    public ICollection<ApiUserClaim> UserClaims { get; set; } = new List<ApiUserClaim>();
 }

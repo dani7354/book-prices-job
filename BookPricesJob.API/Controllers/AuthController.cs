@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using BookPricesJob.API.Model;
@@ -35,7 +36,6 @@ public sealed class AuthController(
             isPersistent: false,
             lockoutOnFailure:  false);
 
-
         if (result.Succeeded)
         {
             logger.LogInformation("User {0} logged in successfully!", userName);
@@ -50,8 +50,7 @@ public sealed class AuthController(
 
         return Unauthorized();
     }
-
-
+    
     [HttpPost("register")]
     [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -107,14 +106,7 @@ public sealed class AuthController(
         if (userClaims.Any(x => x.Type == Constant.ClaimRoleType && x.Value == addRoleRequest.RoleName))
             return BadRequest("User already has this role");
 
-        var claim = new ApiUserClaim()
-        {
-            UserId = user.Id,
-            ClaimType = Constant.ClaimRoleType,
-            ClaimValue = addRoleRequest.RoleName
-        };
-
-        user.UserClaims.Add(claim);
+        await userManager.AddClaimAsync(user, new Claim(Constant.ClaimRoleType, addRoleRequest.RoleName));
         var result = await userManager.UpdateAsync(user);
 
         if (result.Succeeded)
