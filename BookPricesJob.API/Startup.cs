@@ -89,9 +89,7 @@ public class Startup
             .AddEntityFrameworkStores<IdentityDatabaseContextBase>();
 
         var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer) ?? Constant.JwtIssuer;
-
         var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ?? Constant.JwtAudience;
-        
         var jwtSigningKey = Configuration.GetValue<string>(Data.Constant.JwtSigningKey);
         var jwtSigningKeyBytes = jwtSigningKey is null ? 
             RandomNumberGenerator.GetBytes(Constant.JwtSigningKeyByteCount) : Encoding.UTF8.GetBytes(jwtSigningKey);
