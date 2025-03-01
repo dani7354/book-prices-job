@@ -1,6 +1,5 @@
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Data.DatabaseContext;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data.Repository;
 
