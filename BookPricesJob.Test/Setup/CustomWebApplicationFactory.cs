@@ -1,11 +1,8 @@
 using BookPricesJob.Application.Contract;
-using BookPricesJob.Application.DatabaseContext;
-using BookPricesJob.Data;
 using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Data.Entity;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -22,17 +19,10 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll(typeof(DatabaseContextBase));
-            services.RemoveAll(typeof(IdentityDatabaseContextMysql));
-            services.RemoveAll(typeof(IdentityDatabaseContextBase));
             services.RemoveAll(typeof(DbContextOptions<DatabaseContextBase>));
-            services.RemoveAll(typeof(DbContextOptions<IdentityDatabaseContextMysql>));
             services.RemoveAll(typeof(IDbContextOptionsConfiguration<DatabaseContextBase>));
-            services.RemoveAll(typeof(IDbContextOptionsConfiguration<IdentityDatabaseContextMysql>));
             
             services.AddDbContext<DatabaseContextBase>(
-                options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
-
-            services.AddDbContext<IdentityDatabaseContextBase>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
             services.RemoveAll(typeof(ICache));
@@ -40,7 +30,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
             services.AddScoped<IPolicyEvaluator, FakePolicyEvaluator>();
             services.AddIdentityCore<ApiUser>()
-                .AddEntityFrameworkStores<IdentityDatabaseContextBase>();
+                .AddEntityFrameworkStores<DatabaseContextBase>();
         });
 
         builder.UseEnvironment("Development");

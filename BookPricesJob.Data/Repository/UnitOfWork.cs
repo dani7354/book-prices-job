@@ -1,26 +1,17 @@
 using BookPricesJob.Application.Contract;
-using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data.Repository;
 
-public class UnitOfWork : IUnitOfWork
+public class UnitOfWork(DatabaseContextBase dataContext) : IUnitOfWork
 {
-    private readonly DatabaseContextBase _dataContext;
+    public IJobRepository JobRepository { get; } = new JobRepository(dataContext);
 
-    public IJobRepository JobRepository { get; }
-
-    public IJobRunRepository JobRunRepository { get; }
-
-    public UnitOfWork(DatabaseContextBase dataContext)
-    {
-        _dataContext = dataContext;
-        JobRunRepository = new JobRunRepository(dataContext);
-        JobRepository = new JobRepository(dataContext);
-    }
+    public IJobRunRepository JobRunRepository { get; } = new JobRunRepository(dataContext);
 
     public Task<int> Complete()
     { 
-        return _dataContext.SaveChangesAsync();
+        return dataContext.SaveChangesAsync();
     }
 }

@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using BookPricesJob.Application.DatabaseContext;
 
-namespace BookPricesJob.Data;
+namespace BookPricesJob.Data.DatabaseContext;
 
 public class DatabaseContextMysql : DatabaseContextBase
 {

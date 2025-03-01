@@ -3,7 +3,7 @@ using BookPricesJob.Common.Exception;
 using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
-using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Application.Service;
 
 namespace BookPricesJob.Data.Repository;

@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.OpenApi.Models;
 using BookPricesJob.API.Service;
 using BookPricesJob.API.Filter;
-using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Data.Cache;
 using System.Security.Cryptography;
@@ -86,7 +85,7 @@ public class Startup
         services.AddScoped<UserManager<ApiUser>>();
         services.AddScoped<SignInManager<ApiUser>>();
         services.AddIdentityCore<ApiUser>()
-            .AddEntityFrameworkStores<IdentityDatabaseContextBase>();
+            .AddEntityFrameworkStores<DatabaseContextBase>();
 
         var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer) ?? Constant.JwtIssuer;
         var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ?? Constant.JwtAudience;
@@ -127,11 +126,7 @@ public class Startup
     public static void AddDatabaseContext(IServiceCollection services)
     {
         var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
-        services.AddDbContext<DatabaseContextBase>(
-            options => options.UseMySql(
-                EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
-
-         services.AddDbContext<IdentityDatabaseContextBase, IdentityDatabaseContextMysql>(
+        services.AddDbContext<DatabaseContextBase, DatabaseContextMysql>(
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
     }
