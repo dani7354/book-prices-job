@@ -8,16 +8,9 @@ declare -r startup_project="/src/BookPricesJob.API"
 
 
 echo "Applying changes from DatabaseContextMysql..."
-dotnet-ef database update --project "$ef_project" --startup-project "$startup_project" --context DatabaseContextMysql
+dotnet-ef database update --project "$ef_project" --startup-project "$startup_project" --context DefaultDatabaseContext
 if [[ "$?" -ne "0" ]] ; then
-    echo "Failed to apply changes from DatabaseContextMysql!" >&2
-    exit 1
-fi
-
-echo "Applying chages from IdentityDatabaseContextMysql..."
-dotnet-ef database update --project "$ef_project" --startup-project "$startup_project" --context IdentityDatabaseContextMysql
-if [[ "$?" -ne "0" ]] ; then
-    echo "Failed to apply changes from IdentityDatabaseContextMysql!" >&2
+    echo "Failed to apply changes from DefaultDatabaseContext!" >&2
     exit 1
 fi
 

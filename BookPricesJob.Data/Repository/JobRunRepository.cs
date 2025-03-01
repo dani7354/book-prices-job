@@ -3,12 +3,12 @@ using BookPricesJob.Common.Exception;
 using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Domain;
 using Microsoft.EntityFrameworkCore;
-using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Application.Service;
 
 namespace BookPricesJob.Data.Repository;
 
-public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
+public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunRepository
 {
     private static readonly IDictionary<string, int > PriorityEnumValues = new Dictionary<string, int>
     {

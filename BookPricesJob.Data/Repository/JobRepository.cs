@@ -3,12 +3,12 @@ using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Domain;
 using BookPricesJob.Data.Mapper;
 using BookPricesJob.Common.Exception;
-using BookPricesJob.Application.DatabaseContext;
+using BookPricesJob.Data.DatabaseContext;
 
 
 namespace BookPricesJob.Data.Repository;
 
-public class JobRepository(DatabaseContextBase dbContext) : IJobRepository
+public class JobRepository(DefaultDatabaseContext dbContext) : IJobRepository
 {
     public async Task<string> Add(Job job)
     {
