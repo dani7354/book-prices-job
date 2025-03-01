@@ -16,5 +16,5 @@ public static class Constant
     // JWT
     public const int JwtSigningKeyByteCount = 64;
     public const string JwtIssuer = "localhost";
-    public const string JwtAudience = "localhost";
+    public const string JwtAudience = "BookPricesJob";
 }
