@@ -16,6 +16,7 @@ using BookPricesJob.API.Filter;
 using BookPricesJob.Application.DatabaseContext;
 using BookPricesJob.Data.DatabaseContext;
 using BookPricesJob.Data.Cache;
+using System.Security.Cryptography;
 
 namespace BookPricesJob.API;
 
@@ -87,12 +88,13 @@ public class Startup
         services.AddIdentityCore<ApiUser>()
             .AddEntityFrameworkStores<IdentityDatabaseContextBase>();
 
-        var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer)??
-            throw new KeyNotFoundException("JWT issuer is missing");
-        var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ??
-            throw new KeyNotFoundException("JWT audience is missing");
-        var jwtSigningKey = Configuration.GetValue<string>(Data.Constant.JwtSigningKey) ??
-            throw new KeyNotFoundException("JWT signing key is missing");
+        var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer) ?? Constant.JwtIssuer;
+
+        var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ?? Constant.JwtAudience;
+        
+        var jwtSigningKey = Configuration.GetValue<string>(Data.Constant.JwtSigningKey);
+        var jwtSigningKeyBytes = jwtSigningKey is null ? 
+            RandomNumberGenerator.GetBytes(Constant.JwtSigningKeyByteCount) : Encoding.UTF8.GetBytes(jwtSigningKey);
 
         services.AddAuthentication(options =>
         {
@@ -111,7 +113,7 @@ public class Startup
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtIssuer,
                 ValidAudience = jwtAudience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSigningKey))
+                IssuerSigningKey = new SymmetricSecurityKey(jwtSigningKeyBytes)
             };
         });
 
@@ -121,7 +123,7 @@ public class Startup
         });
 
         services.AddScoped<ITokenService, TokenService>(
-            x => new TokenService(jwtSigningKey, jwtAudience, jwtIssuer));
+            _ => new TokenService(jwtSigningKeyBytes, jwtAudience, jwtIssuer));
     }
 
     public static void AddDatabaseContext(IServiceCollection services)

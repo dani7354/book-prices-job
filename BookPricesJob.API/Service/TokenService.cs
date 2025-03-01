@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace BookPricesJob.API.Service;
 
-public class TokenService(string tokenSigningKey, string tokenAudience, string tokenIssuer) : ITokenService
+public class TokenService(byte[] tokenSigningKey, string tokenAudience, string tokenIssuer) : ITokenService
 {
     private const int TokenExpirationDays = 7;
 
@@ -23,7 +23,7 @@ public class TokenService(string tokenSigningKey, string tokenAudience, string t
 
         claims.AddRange(userClaims.Where(uc => uc.Type != null && uc.Value != null));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenSigningKey));
+        var key = new SymmetricSecurityKey(tokenSigningKey);
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
         var tokenDescriptor = new SecurityTokenDescriptor
         {

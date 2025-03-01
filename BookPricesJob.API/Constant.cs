@@ -12,4 +12,9 @@ public static class Constant
 
     // Configuration
     public const string AllowNewUsers = "ALLOW_NEW_USERS";
+    
+    // JWT
+    public const int JwtSigningKeyByteCount = 64;
+    public const string JwtIssuer = "localhost";
+    public const string JwtAudience = "localhost";
 }
