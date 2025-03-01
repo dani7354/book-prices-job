@@ -15,4 +15,5 @@ FROM buildbase AS migrations
 RUN dotnet tool install --global dotnet-ef
 ENV PATH="$PATH:/root/.dotnet/tools"
 WORKDIR /src/BookPricesJob.API/
-ENTRYPOINT ["dotnet-ef", "database", "update", "--project", "/src/BookPricesJob.Data", "--startup-project", "/src/BookPricesJob.API", "--context", "DatabaseContextMysql"]
+COPY Script/ef_update_db.sh .
+ENTRYPOINT [ "./ef_update_db.sh" ]
