@@ -18,11 +18,11 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
     {
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll(typeof(DatabaseContextBase));
-            services.RemoveAll(typeof(DbContextOptions<DatabaseContextBase>));
-            services.RemoveAll(typeof(IDbContextOptionsConfiguration<DatabaseContextBase>));
+            services.RemoveAll(typeof(DefaultDatabaseContext));
+            services.RemoveAll(typeof(DbContextOptions<DefaultDatabaseContext>));
+            services.RemoveAll(typeof(IDbContextOptionsConfiguration<DefaultDatabaseContext>));
             
-            services.AddDbContext<DatabaseContextBase>(
+            services.AddDbContext<DefaultDatabaseContext>(
                 options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
 
             services.RemoveAll(typeof(ICache));
@@ -30,7 +30,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
             services.AddScoped<IPolicyEvaluator, FakePolicyEvaluator>();
             services.AddIdentityCore<ApiUser>()
-                .AddEntityFrameworkStores<DatabaseContextBase>();
+                .AddEntityFrameworkStores<DefaultDatabaseContext>();
         });
 
         builder.UseEnvironment("Development");

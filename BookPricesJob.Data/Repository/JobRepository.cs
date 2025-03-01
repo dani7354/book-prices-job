@@ -8,7 +8,7 @@ using BookPricesJob.Data.DatabaseContext;
 
 namespace BookPricesJob.Data.Repository;
 
-public class JobRepository(DatabaseContextBase dbContext) : IJobRepository
+public class JobRepository(DefaultDatabaseContext dbContext) : IJobRepository
 {
     public async Task<string> Add(Job job)
     {

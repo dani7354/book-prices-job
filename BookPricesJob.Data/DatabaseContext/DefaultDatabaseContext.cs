@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data.DatabaseContext;
 
-public class DatabaseContextBase : DbContext
+public class DefaultDatabaseContext : DbContext
 {
     public virtual DbSet<Job> Job { get; set; } = null!;
     public virtual DbSet<JobRun> JobRun { get; set; } = null!;
@@ -13,6 +13,6 @@ public class DatabaseContextBase : DbContext
     public virtual DbSet<ApiUser> ApiUser { get; set; } = null!;
     public virtual DbSet<IdentityUserClaim<string>> ApiUserClaim { get; set; } = null!;
 
-    public DatabaseContextBase() { }
-    public DatabaseContextBase(DbContextOptions<DatabaseContextBase> options) : base(options) { }
+    public DefaultDatabaseContext() { }
+    public DefaultDatabaseContext(DbContextOptions<DefaultDatabaseContext> options) : base(options) { }
 }

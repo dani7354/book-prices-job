@@ -85,7 +85,7 @@ public class Startup
         services.AddScoped<UserManager<ApiUser>>();
         services.AddScoped<SignInManager<ApiUser>>();
         services.AddIdentityCore<ApiUser>()
-            .AddEntityFrameworkStores<DatabaseContextBase>();
+            .AddEntityFrameworkStores<DefaultDatabaseContext>();
 
         var jwtIssuer = Configuration.GetValue<string>(Data.Constant.JwtIssuer) ?? Constant.JwtIssuer;
         var jwtAudience = Configuration.GetValue<string>(Data.Constant.JwtAudience) ?? Constant.JwtAudience;
@@ -126,7 +126,7 @@ public class Startup
     public static void AddDatabaseContext(IServiceCollection services)
     {
         var mysqlServerVersion = new MySqlServerVersion(new Version(8, 4, 00));
-        services.AddDbContext<DatabaseContextBase, DatabaseContextMysql>(
+        services.AddDbContext<DefaultDatabaseContext>(
             options => options.UseMySql(
                 EnvironmentHelper.GetConnectionString(), mysqlServerVersion));
     }

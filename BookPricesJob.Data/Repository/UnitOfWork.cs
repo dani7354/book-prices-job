@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookPricesJob.Data.Repository;
 
-public class UnitOfWork(DatabaseContextBase dataContext) : IUnitOfWork
+public class UnitOfWork(DefaultDatabaseContext dataContext) : IUnitOfWork
 {
     public IJobRepository JobRepository { get; } = new JobRepository(dataContext);
 

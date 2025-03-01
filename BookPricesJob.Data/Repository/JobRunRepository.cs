@@ -8,7 +8,7 @@ using BookPricesJob.Application.Service;
 
 namespace BookPricesJob.Data.Repository;
 
-public class JobRunRepository(DatabaseContextBase dbContext) : IJobRunRepository
+public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunRepository
 {
     private static readonly IDictionary<string, int > PriorityEnumValues = new Dictionary<string, int>
     {
