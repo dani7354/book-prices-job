@@ -53,7 +53,6 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
     {
         var query = dbContext.JobRun.AsNoTracking();
         query = ApplyFilter(query, active, jobId, statuses, priorities);
-        query = ApplySorting(query, sortBy, sortDirection);
         
         if (limit is not null)
             query = query.Take(limit.Value);
@@ -63,8 +62,9 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
             .ThenInclude(x => x.Values);
         
         var jobRuns = await query.ToListAsync();
+        var jobRunsDomain = ApplySortingAndMapToDomain(jobRuns, sortBy, sortDirection);
 
-        return jobRuns.Select(JobRunMapper.MapToDomain).ToList();
+        return jobRunsDomain;
     }
 
     private static IQueryable<Data.Entity.JobRun> ApplyFilter(
@@ -82,20 +82,26 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
             
         if (statuses is not null)
         {
-            var statusesSet = statuses.Select(s => s.ToString()).ToHashSet();
+            var statusesSet = statuses
+                .Select(s => s.ToString())
+                .ToList();
+            
             query = query.Where(j => statusesSet.Contains(j.Status));
         }
 
         if (priorities is not null)
         {
-            var prioritiesSet = priorities.Select(s => s.ToString()).ToHashSet();
+            var prioritiesSet = priorities
+                .Select(s => s.ToString())
+                .ToList();
+            
             query = query.Where(j => prioritiesSet.Contains(j.Priority));
         }
         
         return query;
     }
     
-    private static IQueryable<Data.Entity.JobRun> ApplySorting(IQueryable<Data.Entity.JobRun> query, SortByOption sortBy, SortDirection sortDirection)
+    private static IList<JobRun> ApplySortingAndMapToDomain(IEnumerable<Data.Entity.JobRun> query, SortByOption sortBy, SortDirection sortDirection)
     {
         switch (sortBy)
         {
@@ -119,7 +125,9 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
                 break;
         }
 
-        return query;
+        return query
+            .Select(JobRunMapper.MapToDomain)
+            .ToList();
     }
 
     public async Task<IList<JobRun>> GetAll()
