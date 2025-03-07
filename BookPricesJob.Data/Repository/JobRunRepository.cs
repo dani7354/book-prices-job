@@ -51,23 +51,18 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         SortByOption sortBy,
         SortDirection sortDirection)
     {
-        var query = dbContext.JobRun.AsNoTracking();
-        query = ApplyFilter(query, active, jobId, statuses, priorities);
-        
-        if (limit is not null)
-            query = query.Take(limit.Value);
-        
-        query = query
+        var query = dbContext.JobRun
             .Include(j => j.Arguments)
-            .ThenInclude(x => x.Values);
+                .ThenInclude(x => x.Values)
+            .AsNoTracking();
         
-        var jobRuns = await query.ToListAsync();
-        var jobRunsDomain = ApplySortingAndMapToDomain(jobRuns, sortBy, sortDirection);
+        var jobRuns = await ApplyFilter(query, active, jobId, statuses, priorities);
+        var jobRunsDomain = ApplySortingAndMapToDomain(jobRuns, sortBy, sortDirection, limit);
 
         return jobRunsDomain;
     }
 
-    private static IQueryable<Data.Entity.JobRun> ApplyFilter(
+    private static async Task<IEnumerable<Data.Entity.JobRun>> ApplyFilter(
         IQueryable<Data.Entity.JobRun> query,
         bool? active, 
         string? jobId, 
@@ -79,29 +74,36 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
             
         if (active.HasValue)
             query = query.Where(j => j.Job.IsActive == active);
-            
+
+        // Since EF doesn't find a MySQL translation for the following .Contains (WHERE IN) filters,
+        // it's necessary to pull out the rows and do the filtering on a list instead.
+        IEnumerable<Entity.JobRun> jobRuns = await query.ToListAsync();
         if (statuses is not null)
         {
-            var statusesSet = statuses
+            var statusValues = statuses
                 .Select(s => s.ToString())
-                .ToList();
+                .ToHashSet();
             
-            query = query.Where(j => statusesSet.Contains(j.Status));
+            jobRuns = jobRuns.Where(j => statusValues.Contains(j.Status));
         }
 
         if (priorities is not null)
         {
-            var prioritiesSet = priorities
+            var priorityValues = priorities
                 .Select(s => s.ToString())
-                .ToList();
+                .ToHashSet();
             
-            query = query.Where(j => prioritiesSet.Contains(j.Priority));
+            jobRuns = jobRuns.Where(j => priorityValues.Contains(j.Priority));
         }
         
-        return query;
+        return jobRuns;
     }
     
-    private static IList<JobRun> ApplySortingAndMapToDomain(IEnumerable<Data.Entity.JobRun> query, SortByOption sortBy, SortDirection sortDirection)
+    private static IList<JobRun> ApplySortingAndMapToDomain(
+        IEnumerable<Data.Entity.JobRun> query, 
+        SortByOption sortBy, 
+        SortDirection sortDirection,
+        int? limit)
     {
         switch (sortBy)
         {
@@ -124,6 +126,9 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
                 query = query.OrderByDescending(x => x.Updated);
                 break;
         }
+        
+        if (limit is not null)
+            query = query.Take(limit.Value);
 
         return query
             .Select(JobRunMapper.MapToDomain)
