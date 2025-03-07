@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-using System.Linq.Expressions;
 using BookPricesJob.Application.Contract;
 using BookPricesJob.Common.Exception;
 using BookPricesJob.Data.Mapper;
@@ -84,7 +82,7 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         {
             var statusValues = statuses
                 .Select(s => s.ToString())
-                .ToList();
+                .ToHashSet();
             
             jobRuns = jobRuns.Where(j => statusValues.Contains(j.Status));
         }
@@ -93,7 +91,7 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         {
             var priorityValues = priorities
                 .Select(s => s.ToString())
-                .ToList();
+                .ToHashSet();
             
             jobRuns = jobRuns.Where(j => priorityValues.Contains(j.Priority));
         }
