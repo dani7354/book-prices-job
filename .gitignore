@@ -5,6 +5,10 @@ Docker/*
 !Docker/*.Dockerfile
 
 .vscode/
+.idea/
 
 appsettings.Development.json
 *.env
+BookPricesJob.sln.DotSettings.user
+global.json
+
