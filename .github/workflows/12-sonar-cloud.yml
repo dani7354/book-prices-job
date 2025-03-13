@@ -28,4 +28,4 @@ jobs:
             -Dsonar.projectKey=dani7354_book-prices-job
             -Dsonar.organization=dani7354
             -Dsonar.sources=.
-            -Dsonar.exclusions=BookPricesJob.Data/Migrations/**
+            -Dsonar.exclusions=BookPricesJob.Data/Migrations/**, SQL/**
