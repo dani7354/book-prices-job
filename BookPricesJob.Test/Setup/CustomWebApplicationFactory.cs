@@ -23,7 +23,7 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
             services.RemoveAll(typeof(IDbContextOptionsConfiguration<DefaultDatabaseContext>));
             
             services.AddDbContext<DefaultDatabaseContext>(
-                options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()), ServiceLifetime.Singleton);
+                options => options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
 
             services.RemoveAll(typeof(ICache));
             services.AddScoped<ICache, FakeCache>();
