@@ -313,6 +313,42 @@ public class JobRunControllerTests
             Constant.ContentTypeValue,
             responseCreateJobRun.Content.Headers.ContentType?.ToString());
     }
+    
+    [Fact]
+    public async Task Create_NewJobRunWithArguments_ReturnsSuccessAndCreatedObjectWithArguments()
+    {
+        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.GetCreateJobRequest());
+        responseCreateJob.EnsureSuccessStatusCode();
+        var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var jobId = jobDto!.Id;
+        var jobRunPayload = new CreateJobRunRequest()
+        {
+            JobId = jobId,
+            Priority = nameof(JobRunPriority.Normal),
+            Arguments =
+            [
+                new JobRunArgumentDto
+                {
+                    Name = "Arg1",
+                    Type = "String",
+                    Values = ["Value1"]
+                }
+            ]
+        };
+
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
+
+        var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        Assert.Equal(HttpStatusCode.Created, responseCreateJobRun.StatusCode);
+
+        var createdJobRun = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
+        Assert.NotNull(createdJobRun);
+        Assert.Single(createdJobRun.Arguments);
+        Assert.Equal("Arg1", createdJobRun.Arguments[0].Name);
+        Assert.Equal("String", createdJobRun.Arguments[0].Type);
+        Assert.Equal(["Value1"], createdJobRun.Arguments[0].Values);
+    }
 
     [Fact]
     public async Task Create_NoJobsExist_ReturnsBadRequest()

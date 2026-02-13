@@ -29,7 +29,7 @@ public static class JobMapper
             };
     }
 
-    public static JobListItemDto MapToListItemDto(Job job)
+    private static JobListItemDto MapToListItemDto(Job job)
     {
         return new JobListItemDto(
             job.IsActive,
