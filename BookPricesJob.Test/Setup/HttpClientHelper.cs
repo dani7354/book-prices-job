@@ -6,12 +6,14 @@ namespace BookPricesJob.Test.Setup;
 
 public static class HttpClientHelper
 {
+    private const string MediaType = "application/json";
+    
     public static async Task<HttpResponseMessage> PostJob(HttpClient client, CreateJobRequest job)
     {
         var content = new StringContent(
             JsonSerializer.Serialize(job),
             Encoding.UTF8,
-            "application/json");
+            MediaType);
 
         var response = await client.PostAsync(Constant.JobsBaseEndpoint, content);
         response.EnsureSuccessStatusCode();
@@ -24,7 +26,7 @@ public static class HttpClientHelper
         var content = new StringContent(
             JsonSerializer.Serialize(update),
             Encoding.UTF8,
-            "application/json");
+            MediaType);
 
         var response = await client.PatchAsync($"{Constant.JobsBaseEndpoint}/{update.Id}", content);
         response.EnsureSuccessStatusCode();
@@ -37,7 +39,7 @@ public static class HttpClientHelper
         var content = new StringContent(
             JsonSerializer.Serialize(update),
             Encoding.UTF8,
-            "application/json");
+            MediaType);
 
         var response = await client.PatchAsync($"{Constant.JobRunsBaseEndpoint}/{update.JobRunId}", content);
         response.EnsureSuccessStatusCode();
@@ -50,6 +52,6 @@ public static class HttpClientHelper
         return new StringContent(
             JsonSerializer.Serialize(payload),
             Encoding.UTF8,
-            "application/json");
+            MediaType);
     }
 }
