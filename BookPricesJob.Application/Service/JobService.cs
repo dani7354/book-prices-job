@@ -1,4 +1,5 @@
 using BookPricesJob.Application.Contract;
+using BookPricesJob.Application.Exception;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Application.Service;
@@ -7,6 +8,12 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
 {
     private readonly TimeSpan _jobCacheExpiry = TimeSpan.FromHours(3);
     private readonly TimeSpan _jobRunCacheExpiry = TimeSpan.FromMinutes(30);
+    
+    private readonly HashSet<JobRunStatus> _jobRunCompletedStatuses =
+    [
+        JobRunStatus.Completed,
+        JobRunStatus.Failed
+    ];
 
     #region Job
 
@@ -162,6 +169,12 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
 
     public async Task UpdateJobRun(JobRun jobRun)
     {
+        var jobRunId = jobRun.Id!;
+        var existingJobRun = await GetJobRunById(jobRunId);
+        if (existingJobRun is null)
+            throw new JobRunUpdateInvalidRequestException($"JobRun with ID {jobRunId} not found!");
+
+        ThrowIfJobRunUpdateNotAllowed(existingJobRun, jobRun);
         await unitOfWork.JobRunRepository.Update(jobRun);
         await unitOfWork.Complete();
         await cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(jobRun.Id!));
@@ -170,6 +183,26 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
     }
 
+    private void ThrowIfJobRunUpdateNotAllowed(JobRun existingJobRun, JobRun updatedJobRun)
+    { 
+        if (!_jobRunCompletedStatuses.Contains(existingJobRun.Status)) return;
+        if (existingJobRun.Priority != updatedJobRun.Priority)
+            throw new JobRunUpdateInvalidRequestException(
+                $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
+                $"of a completed (ID: {existingJobRun.Id}).");
+        if (IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun))
+            throw new JobRunUpdateInvalidRequestException(
+                $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
+    }
+    
+    private bool IsJobRunArgumentsUpdated(JobRun existingJobRun, JobRun updatedJobRun)
+    {
+        if (existingJobRun.Arguments.Count != updatedJobRun.Arguments.Count)
+            return true;
+
+        return !existingJobRun.Arguments.SequenceEqual(updatedJobRun.Arguments);
+    }
+    
     public async Task DeleteJobRun(string id)
     {
         await unitOfWork.JobRunRepository.Delete(id);
