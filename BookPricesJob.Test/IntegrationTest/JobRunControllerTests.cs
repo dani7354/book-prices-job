@@ -503,13 +503,17 @@ public class JobRunControllerTests
         
         Assert.Equal(HttpStatusCode.OK, responseUpdateJobRun.StatusCode);
 
+        var responseGetJobRunUpdated = await _client.GetAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}");
+        var jobRunUpdated = await responseGetJobRunUpdated.Content.ReadFromJsonAsync<JobRunDto>();
+        Assert.NotNull(jobRunUpdated);
+        
         var updateJobRunPayloadNew = new UpdateJobRunFullRequest
         {
             JobRunId = jobRunDto.Id,
             JobId = jobRunDto.JobId,
             Priority = nameof(JobRunPriority.High),
             Status = nameof(JobRunStatus.Completed),
-            Version = jobRunDto.Version
+            Version = jobRunUpdated.Version
         };
         var updateContentPriority = HttpClientHelper.CreateStringPayload(updateJobRunPayloadNew);
         var responseUpdatePriority = await _client.PutAsync(
@@ -537,12 +541,16 @@ public class JobRunControllerTests
             updateContent);
         
         Assert.Equal(HttpStatusCode.OK, responseUpdateJobRun.StatusCode);
+        
+        var responseGetJobRunUpdated = await _client.GetAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}");
+        var jobRunUpdated = await responseGetJobRunUpdated.Content.ReadFromJsonAsync<JobRunDto>();
+        Assert.NotNull(jobRunUpdated);
 
         var updateJobRunPayloadNew = new UpdateJobRunPartialRequest
         {
             JobRunId = jobRunDto.Id,
             Priority = nameof(JobRunPriority.High),
-            Version = jobRunDto.Version
+            Version = jobRunUpdated.Version
         };
         var updateContentPriority = HttpClientHelper.CreateStringPayload(updateJobRunPayloadNew);
         var responseUpdatePriority = await _client.PatchAsync(
@@ -570,22 +578,25 @@ public class JobRunControllerTests
         var responseUpdateJobRun = await _client.PatchAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
             updateContent);
-        
         Assert.Equal(HttpStatusCode.OK, responseUpdateJobRun.StatusCode);
+        
+        var responseGetJobRunUpdated = await _client.GetAsync($"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}");
+        var jobRunUpdated = await responseGetJobRunUpdated.Content.ReadFromJsonAsync<JobRunDto>();
+        Assert.NotNull(jobRunUpdated);
         
         var updatedArguments = JobRunArguments.ElementAt(2)[0] as List<JobRunArgumentDto>;
         var updateJobRunPayloadNew = new UpdateJobRunPartialRequest
         {
             JobRunId = jobRunDto.Id,
-            Version = jobRunDto.Version,
+            Version = jobRunUpdated.Version,
             Arguments = updatedArguments!
         };
-        var updateContentPriority = HttpClientHelper.CreateStringPayload(updateJobRunPayloadNew);
-        var responseUpdatePriority = await _client.PatchAsync(
+        var updateContentArguments = HttpClientHelper.CreateStringPayload(updateJobRunPayloadNew);
+        var responseUpdateArguments = await _client.PatchAsync(
             $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
-            updateContentPriority);
+            updateContentArguments);
         
-        Assert.Equal(HttpStatusCode.BadRequest, responseUpdatePriority.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, responseUpdateArguments.StatusCode);
     }
 
     [Theory]

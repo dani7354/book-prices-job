@@ -189,18 +189,10 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         if (existingJobRun.Priority != updatedJobRun.Priority)
             throw new JobRunUpdateInvalidRequestException(
                 $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
-                $"of a completed (ID: {existingJobRun.Id}).");
+                $"of a completed JobRun (ID: {existingJobRun.Id}).");
         if (IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun))
             throw new JobRunUpdateInvalidRequestException(
                 $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
-    }
-    
-    private bool IsJobRunArgumentsUpdated(JobRun existingJobRun, JobRun updatedJobRun)
-    {
-        if (existingJobRun.Arguments.Count != updatedJobRun.Arguments.Count)
-            return true;
-
-        return !existingJobRun.Arguments.SequenceEqual(updatedJobRun.Arguments);
     }
     
     public async Task DeleteJobRun(string id)
@@ -236,6 +228,14 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
             .Where(x => jobsForJobRuns.ContainsKey(x.JobId))
             .Select(x => (x, jobsForJobRuns[x.JobId]))
             .ToList();
+    }
+    
+    private static bool IsJobRunArgumentsUpdated(JobRun existingJobRun, JobRun updatedJobRun)
+    {
+        if (existingJobRun.Arguments.Count != updatedJobRun.Arguments.Count)
+            return true;
+
+        return !existingJobRun.Arguments.SequenceEqual(updatedJobRun.Arguments, new JobRunArgumentEqualityComparer());
     }
 
     #endregion
