@@ -173,12 +173,10 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         dbContext.JobRun.Update(updatedJobRun);
     }
     
-    
     public async Task<List<(string JobId, string JobName, string Status, int Count)>> GetJobRunCountsByJob()
     {
-        var statusesToInclude = new[] { nameof(JobRunStatus.Completed), nameof(JobRunStatus.Failed) };
         var entities = await dbContext.JobRun
-            .Where(x => statusesToInclude.Contains(x.Status))
+            .Where(x => x.Status == nameof(JobRunStatus.Completed) || x.Status == nameof(JobRunStatus.Failed))
             .GroupBy(x => new { x.JobId, x.Job.Name, x.Status })
             .Select(
                 x => new
