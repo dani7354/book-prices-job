@@ -57,6 +57,7 @@ public class Startup
     
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IJobService, JobService>();
+        services.AddScoped<IStatisticsService, StatisticsService>();
     }
 
     public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)

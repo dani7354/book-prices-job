@@ -14,4 +14,6 @@ public interface IJobRunRepository : IRepository<JobRun>
         IEnumerable<JobRunPriority>? priorities,
         SortByOption sortBy,
         SortDirection sortDirection);
+    
+    Task<List<(string JobId, string JobName, string Status, int Count)>> GetJobRunCountsByJob();
 }
