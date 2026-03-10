@@ -5,52 +5,76 @@ namespace BookPricesJob.Application.Service;
 
 public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
 {
+    private static readonly HashSet<JobRunStatus> FinishedStatuses = [ JobRunStatus.Completed, JobRunStatus.Failed ];
+    
     public async Task<IList<JobRunCountsByStatus>> GetJobRunCountsByJob()
     {
+        var jobs = await unitOfWork.JobRepository.GetJobs();
         var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob();
+        var jobRunCountsByJob = CreateJobRunCountsByJob(jobRunCounts);
         
-        var (jobRunCountsByJob, uniqueStatuses) = CreateJobRunCountsByJob(
-            jobRunCounts);
-        
-        AddMissingStatusesToJobRunCountsByJob(jobRunCountsByJob, uniqueStatuses);
+        AddMissingJobsToJobRunCountsByJob(jobRunCountsByJob, jobs);
+        AddMissingStatusesToJobRunCountsByJob(jobRunCountsByJob);
         
         return jobRunCountsByJob.Values.ToList();
     }
 
-    private static (
-        Dictionary<string, JobRunCountsByStatus>, HashSet<JobRunStatus>) CreateJobRunCountsByJob(
-            List<(string, string, string, int)> jobRunCounts)
+    private static Dictionary<string, JobRunCountsByStatus> CreateJobRunCountsByJob(
+            IList<(string, string, string, int)> jobRunCounts)
     {
-        var uniqueStatuses = new HashSet<JobRunStatus>();
         var jobRunCountsByJob = new Dictionary<string, JobRunCountsByStatus>();
         foreach (var (jobId, jobName, status, count) in jobRunCounts)
         {
-            uniqueStatuses.Add(Enum.Parse<JobRunStatus>(status));
             if (jobRunCountsByJob.TryGetValue(jobId, out var countsByStatus))
             {
                 countsByStatus.CountsByStatus[status] = count;
+                countsByStatus.PercentagesByStatus[status] = (float) countsByStatus.CountsByStatus.Values.Sum() / 100 * count;
             }
             else
             {
-                jobRunCountsByJob[jobId] = new JobRunCountsByStatus(
-                    jobId,
-                    jobName,
-                    new Dictionary<string, int>{ { status, count } });
+                countsByStatus = new JobRunCountsByStatus(
+                    JobId: jobId,
+                    JobName: jobName,
+                    CountsByStatus: new Dictionary<string, int>{ { status, count } },
+                    PercentagesByStatus: new Dictionary<string, float> { {status, 100f } });
+
+                jobRunCountsByJob[jobId] = countsByStatus;
             }
         }
         
-        return (jobRunCountsByJob, uniqueStatuses);
+        return jobRunCountsByJob;
     }
     
-    private static void AddMissingStatusesToJobRunCountsByJob(
+    private static void AddMissingJobsToJobRunCountsByJob(
         Dictionary<string, JobRunCountsByStatus> jobRunCountsByJob,
-        HashSet<JobRunStatus> uniqueStatuses)
+        IList<Job> allJobs)
     {
-        foreach (var status in uniqueStatuses)
+        foreach (var job in allJobs)
+        {
+            var jobId = job.Id!;
+            var countByStatuses = FinishedStatuses
+                .ToDictionary(s => s.ToString(), _ => 0);
+            var percentagesByStatuses = FinishedStatuses
+                .ToDictionary(s => s.ToString(), _ => 0.0f);
+            
+            jobRunCountsByJob.TryAdd(jobId, new JobRunCountsByStatus(
+                JobId: jobId,
+                JobName: job.Name,
+                CountsByStatus: countByStatuses,
+                PercentagesByStatus: percentagesByStatuses));
+        }
+    }
+    
+    private static void AddMissingStatusesToJobRunCountsByJob(Dictionary<string, JobRunCountsByStatus> jobRunCountsByJob)
+    {
+        foreach (var status in FinishedStatuses)
         {
             var statusString = status.ToString();
             foreach (var jobRunCountsByJobEntry in jobRunCountsByJob.Values)
+            {
                 jobRunCountsByJobEntry.CountsByStatus.TryAdd(statusString, 0);
+                jobRunCountsByJobEntry.PercentagesByStatus.TryAdd(statusString, 0.0f);
+            }
         }
     }
 }

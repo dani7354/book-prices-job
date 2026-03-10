@@ -15,5 +15,5 @@ public interface IJobRunRepository : IRepository<JobRun>
         SortByOption sortBy,
         SortDirection sortDirection);
     
-    Task<List<(string JobId, string JobName, string Status, int Count)>> GetJobRunCountsByJob();
+    Task<IList<(string JobId, string JobName, string Status, int Count)>> GetJobRunCountsByJob();
 }
