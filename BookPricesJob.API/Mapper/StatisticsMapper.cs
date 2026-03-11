@@ -23,5 +23,4 @@ public static class StatisticsMapper
         
         return new FinishedJobRunsStatisticsDto(generatedAtFormatted, jobRunCountsByStatusDtos);
     }
-        
 }
