@@ -14,32 +14,33 @@ public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
         var jobRunCountsByJob = CreateJobRunCountsByJob(jobRunCounts);
         
         AddMissingJobsToJobRunCountsByJob(jobRunCountsByJob, jobs);
-        AddMissingStatusesToJobRunCountsByJob(jobRunCountsByJob);
         
         return jobRunCountsByJob.Values.ToList();
     }
 
     private static Dictionary<string, JobRunCountsByStatus> CreateJobRunCountsByJob(
-            IList<(string, string, string, int)> jobRunCounts)
+        Dictionary<string, List<(string, string, string, int)>> jobRunCounts)
     {
         var jobRunCountsByJob = new Dictionary<string, JobRunCountsByStatus>();
-        foreach (var (jobId, jobName, status, count) in jobRunCounts)
+        foreach (var (jobId, countsForJob) in jobRunCounts)
         {
-            if (jobRunCountsByJob.TryGetValue(jobId, out var countsByStatus))
+            if (!jobRunCountsByJob.TryGetValue(jobId, out var countsByStatus))
+            {
+                var (_, jobName, _, _) = countsForJob.First();
+                jobRunCountsByJob[jobId] = countsByStatus = JobRunCountsByStatus.CreateEmpty(jobId, jobName);
+            }
+
+            var totalJobRunCount = countsForJob.Sum(z => z.Item4);
+            foreach (var (_, _, status, count) in countsForJob)
             {
                 countsByStatus.CountsByStatus[status] = count;
-                countsByStatus.PercentagesByStatus[status] = (float) countsByStatus.CountsByStatus.Values.Sum() / 100 * count;
+                countsByStatus.PercentagesByStatus[status] = (float) count / totalJobRunCount * 100;
             }
-            else
-            {
-                countsByStatus = new JobRunCountsByStatus(
-                    JobId: jobId,
-                    JobName: jobName,
-                    CountsByStatus: new Dictionary<string, int>{ { status, count } },
-                    PercentagesByStatus: new Dictionary<string, float> { {status, 100f } });
 
-                jobRunCountsByJob[jobId] = countsByStatus;
-            }
+            if (countsByStatus.CountsByStatus.Count == FinishedStatuses.Count)
+                continue;
+            
+            AddZeroCountsForMissingStatuses(countsByStatus);
         }
         
         return jobRunCountsByJob;
@@ -47,34 +48,28 @@ public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
     
     private static void AddMissingJobsToJobRunCountsByJob(
         Dictionary<string, JobRunCountsByStatus> jobRunCountsByJob,
-        IList<Job> allJobs)
+        IEnumerable<Job> allJobs)
     {
         foreach (var job in allJobs)
         {
             var jobId = job.Id!;
-            var countByStatuses = FinishedStatuses
-                .ToDictionary(s => s.ToString(), _ => 0);
-            var percentagesByStatuses = FinishedStatuses
-                .ToDictionary(s => s.ToString(), _ => 0.0f);
+            if (jobRunCountsByJob.ContainsKey(jobId))
+                continue;
+
+            var jobRunCountByStatus = JobRunCountsByStatus.CreateEmpty(jobId, job.Name);
             
-            jobRunCountsByJob.TryAdd(jobId, new JobRunCountsByStatus(
-                JobId: jobId,
-                JobName: job.Name,
-                CountsByStatus: countByStatuses,
-                PercentagesByStatus: percentagesByStatuses));
+            AddZeroCountsForMissingStatuses(jobRunCountByStatus);
+            jobRunCountsByJob[jobId] = jobRunCountByStatus;
         }
     }
     
-    private static void AddMissingStatusesToJobRunCountsByJob(Dictionary<string, JobRunCountsByStatus> jobRunCountsByJob)
+    private static void AddZeroCountsForMissingStatuses(JobRunCountsByStatus jobRunCountsByStatus)
     {
         foreach (var status in FinishedStatuses)
         {
             var statusString = status.ToString();
-            foreach (var jobRunCountsByJobEntry in jobRunCountsByJob.Values)
-            {
-                jobRunCountsByJobEntry.CountsByStatus.TryAdd(statusString, 0);
-                jobRunCountsByJobEntry.PercentagesByStatus.TryAdd(statusString, 0.0f);
-            }
+            jobRunCountsByStatus.CountsByStatus.TryAdd(statusString, 0);
+            jobRunCountsByStatus.PercentagesByStatus.TryAdd(statusString, 0.0f);
         }
     }
 }

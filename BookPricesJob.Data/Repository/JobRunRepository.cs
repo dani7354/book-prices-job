@@ -167,26 +167,24 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
                              ?? throw new NotFoundException(id: jobRunDomain.Id!);
 
         dbContext.JobRunArgument.RemoveRange(existingEntity.Arguments);
-        var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity);
+        var updatedJobRun = JobRunMapper.MapToEntity(jobRunDomain, existingEntity); 
 
         dbContext.Entry(existingEntity).Property(x => x.Version).OriginalValue = jobRunDomain.Version;
         dbContext.JobRun.Update(updatedJobRun);
     }
     
-    public async Task<IList<(string JobId, string JobName, string Status, int Count)>> GetJobRunCountsByJob()
+    public async Task<Dictionary<string, List<(string JobId, string JobName, string Status, int Count)>>> GetJobRunCountsByJob()
     {
         var entities = await dbContext.JobRun
+            .Include(x => x.Job)
             .Where(x => x.Status == nameof(JobRunStatus.Completed) || x.Status == nameof(JobRunStatus.Failed))
             .GroupBy(x => new { x.JobId, x.Job.Name, x.Status })
-            .Select(
-                x => new
-                {
-                    x.Key.JobId, 
-                    JobName = x.Key.Name,
-                    x.Key.Status, 
-                    Count = x.Count()
-                }).ToListAsync();
+            .ToDictionaryAsync(
+                x => x.Key.JobId, 
+                x => x
+                    .Select(z => (z.JobId, z.Job.Name, z.Status, x.Count()))
+                    .ToList());
 
-        return entities.Select(x => (x.JobId, x.JobName, x.Status, x.Count)).ToList();
+        return entities;
     }
 }
