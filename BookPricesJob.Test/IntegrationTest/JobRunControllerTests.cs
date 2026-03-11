@@ -55,27 +55,7 @@ public class JobRunControllerTests
             }
         ],
     ];
-
-    private static async Task<JobRunDto> CreateJobRunForJob(
-        HttpClient client,
-        string jobId,
-        JobRunPriority priority = JobRunPriority.Normal)
-    {
-        var jobRunPayload = new CreateJobRunRequest()
-        {
-            JobId = jobId,
-            Priority = priority.ToString()
-        };
-
-        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
-
-        var responseCreateJobRun = await client.PostAsync(Constant.JobRunsBaseEndpoint, content);
-        var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
-        Assert.NotNull(jobRunDto);
-
-        return jobRunDto;
-    }
-
+    
     private static async Task<JobRunDto> CreateJobWithJobRun(
         HttpClient client,
         JobRunPriority priority = JobRunPriority.Normal,
@@ -122,9 +102,9 @@ public class JobRunControllerTests
     public async Task JobRuns_Filtering_ReturnsSuccessWithListOfJobRuns()
     {
         var jobRunDto = await CreateJobWithJobRun(_client);
-        await CreateJobRunForJob(_client, jobRunDto.JobId);
-        await CreateJobRunForJob(_client, jobRunDto.JobId);
-        await CreateJobRunForJob(_client, jobRunDto.JobId);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
         
         var response = await _client.GetAsync(Constant.JobRunsBaseEndpoint);
         response.EnsureSuccessStatusCode();
@@ -141,9 +121,9 @@ public class JobRunControllerTests
     public async Task JobRuns_Filtering_ReturnsSuccessWithListOfJobRunsFilteredByPriorityAndJobId()
     {
         var jobRunDto = await CreateJobWithJobRun(_client);
-        await CreateJobRunForJob(_client, jobRunDto.JobId);
-        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
-        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
 
         var url = $"{Constant.JobRunsBaseEndpoint}";
         url += $"?jobId={jobRunDto.JobId}";
@@ -196,11 +176,11 @@ public class JobRunControllerTests
     public async Task JobRuns_Ordering_ReturnsSuccessListOdJobRunsOrderedByPriorityDesc()
     {
         var jobRunDto = await CreateJobWithJobRun(_client);
-        await CreateJobRunForJob(_client, jobRunDto.JobId);
-        await CreateJobRunForJob(_client, jobRunDto.JobId);
-        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
-        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
-        await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
 
         var url = $"{Constant.JobRunsBaseEndpoint}?sortBy=priority&sortDirection=descending";
         
@@ -211,9 +191,9 @@ public class JobRunControllerTests
         var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
         Assert.NotNull(jobRuns);
         Assert.Equal(6, jobRuns.Length);
-        Assert.Equal(JobRunPriority.High.ToString(), jobRuns.First().Priority);
-        Assert.Equal(JobRunPriority.Normal.ToString(), jobRuns[2].Priority);
-        Assert.Equal(JobRunPriority.Low.ToString(), jobRuns.Last().Priority);
+        Assert.Equal(nameof(JobRunPriority.High), jobRuns.First().Priority);
+        Assert.Equal(nameof(JobRunPriority.Normal), jobRuns[2].Priority);
+        Assert.Equal(nameof(JobRunPriority.Low), jobRuns.Last().Priority);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
         Assert.Equal(Constant.ContentTypeValue, contentType);
@@ -223,53 +203,53 @@ public class JobRunControllerTests
     public async Task JobRuns_Ordering_ReturnsSuccessListOdJobRunsOrderedByStatusAsc()
     {
         var jobRunDto = await CreateJobWithJobRun(_client);
-        var jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId);
+        var jobRun = await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
         var responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
             JobRunId = jobRun.Id,
             Version = jobRun.Version,
-            Status = JobRunStatus.Running.ToString()
+            Status = nameof(JobRunStatus.Running)
         });
         responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId);
+        jobRun = await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId);
         responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
             JobRunId = jobRun.Id,
             Version = jobRun.Version,
-            Status = JobRunStatus.Failed.ToString()
+            Status = nameof(JobRunStatus.Failed)
         });
         responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
+        jobRun = await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.Low);
         responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
             JobRunId = jobRun.Id,
             Version = jobRun.Version,
-            Status = JobRunStatus.Failed.ToString()
+            Status = nameof(JobRunStatus.Failed)
         });
         responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        jobRun = await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
         responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
             JobRunId = jobRun.Id,
             Version = jobRun.Version,
-            Status = JobRunStatus.Pending.ToString()
+            Status = nameof(JobRunStatus.Pending)
         });
         responseUpdateJobRun.EnsureSuccessStatusCode();
         
-        jobRun = await CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
+        jobRun = await HttpClientHelper.CreateJobRunForJob(_client, jobRunDto.JobId, JobRunPriority.High);
         responseUpdateJobRun = await HttpClientHelper.PatchJobRun(_client, new UpdateJobRunPartialRequest
         {
             JobId = jobRunDto.JobId,
             JobRunId = jobRun.Id,
             Version = jobRun.Version,
-            Status = JobRunStatus.Completed.ToString()
+            Status = nameof(JobRunStatus.Completed)
         });
         responseUpdateJobRun.EnsureSuccessStatusCode();
 
@@ -281,10 +261,10 @@ public class JobRunControllerTests
         var jobRuns = await response.Content.ReadFromJsonAsync<JobRunDto[]>();
         Assert.NotNull(jobRuns);
         Assert.Equal(6, jobRuns.Length);
-        Assert.Equal(JobRunStatus.Completed.ToString(), jobRuns.First().Status);
-        Assert.Equal(JobRunStatus.Failed.ToString(), jobRuns[1].Status);
-        Assert.Equal(JobRunStatus.Pending.ToString(), jobRuns[3].Status);
-        Assert.Equal(JobRunStatus.Running.ToString(), jobRuns.Last().Status);
+        Assert.Equal(nameof(JobRunStatus.Completed), jobRuns.First().Status);
+        Assert.Equal(nameof(JobRunStatus.Failed), jobRuns[1].Status);
+        Assert.Equal(nameof(JobRunStatus.Pending), jobRuns[3].Status);
+        Assert.Equal(nameof(JobRunStatus.Running), jobRuns.Last().Status);
 
         var contentType = response.Content.Headers.ContentType?.ToString();
         Assert.Equal(Constant.ContentTypeValue, contentType);
@@ -301,7 +281,7 @@ public class JobRunControllerTests
         var jobRunPayload = new CreateJobRunRequest
         {
             JobId = jobId,
-            Priority = JobRunPriority.Normal.ToString()
+            Priority = nameof(JobRunPriority.Normal)
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
@@ -356,7 +336,7 @@ public class JobRunControllerTests
         var jobRunPayload = new CreateJobRunRequest()
         {
             JobId = Guid.NewGuid().ToString(),
-            Priority = JobRunPriority.Normal.ToString()
+            Priority = nameof(JobRunPriority.Normal)
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);

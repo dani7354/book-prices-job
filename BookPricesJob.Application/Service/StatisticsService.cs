@@ -10,6 +10,9 @@ public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
     public async Task<IList<JobRunCountsByStatus>> GetJobRunCountsByJob()
     {
         var jobs = await unitOfWork.JobRepository.GetJobs();
+        if (!jobs.Any())
+            return new List<JobRunCountsByStatus>();
+        
         var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob();
         var jobRunCountsByJob = CreateJobRunCountsByJob(jobRunCounts);
         

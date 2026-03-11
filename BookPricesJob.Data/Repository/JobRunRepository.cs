@@ -12,17 +12,17 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
 {
     private static readonly IDictionary<string, int> PriorityEnumValues = new Dictionary<string, int>
     {
-        { JobRunPriority.Low.ToString(), (int)JobRunPriority.Low },
-        { JobRunPriority.Normal.ToString(), (int)JobRunPriority.Normal },
-        { JobRunPriority.High.ToString(), (int)JobRunPriority.High }
+        { nameof(JobRunPriority.Low), (int)JobRunPriority.Low },
+        { nameof(JobRunPriority.Normal), (int)JobRunPriority.Normal },
+        { nameof(JobRunPriority.High), (int)JobRunPriority.High }
     };
 
     private static readonly IDictionary<string, int> StatusEnumValues = new Dictionary<string, int>
     {
-        { JobRunStatus.Running.ToString(), (int)JobRunStatus.Running },
-        { JobRunStatus.Pending.ToString(), (int)JobRunStatus.Pending },
-        { JobRunStatus.Failed.ToString(), (int)JobRunStatus.Failed },
-        { JobRunStatus.Completed.ToString(), (int)JobRunStatus.Completed }
+        { nameof(JobRunStatus.Running), (int)JobRunStatus.Running },
+        { nameof(JobRunStatus.Pending), (int)JobRunStatus.Pending },
+        { nameof(JobRunStatus.Failed), (int)JobRunStatus.Failed },
+        { nameof(JobRunStatus.Completed), (int)JobRunStatus.Completed }
     };
 
     public async Task<string> Add(JobRun jobDomain)
@@ -175,16 +175,19 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
     
     public async Task<Dictionary<string, List<(string JobId, string JobName, string Status, int Count)>>> GetJobRunCountsByJob()
     {
-        var entities = await dbContext.JobRun
+        var rows = await dbContext.JobRun
             .Include(x => x.Job)
             .Where(x => x.Status == nameof(JobRunStatus.Completed) || x.Status == nameof(JobRunStatus.Failed))
-            .GroupBy(x => new { x.JobId, x.Job.Name, x.Status })
-            .ToDictionaryAsync(
-                x => x.Key.JobId, 
-                x => x
-                    .Select(z => (z.JobId, z.Job.Name, z.Status, x.Count()))
-                    .ToList());
+            .Select(x => new { x.JobId, JobName = x.Job.Name, x.Status })
+            .ToListAsync();
 
-        return entities;
+        return rows
+            .GroupBy(x => x.JobId)
+            .ToDictionary(
+                g => g.Key,
+                g => g
+                    .GroupBy(x => x.Status)
+                    .Select(sg => (sg.First().JobId, sg.First().JobName, sg.Key, sg.Count()))
+                    .ToList());
     }
 }

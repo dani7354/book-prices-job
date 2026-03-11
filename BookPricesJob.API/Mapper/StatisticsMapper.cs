@@ -18,7 +18,8 @@ public static class StatisticsMapper
                 JobId: j.JobId, 
                 JobName: j.JobName, 
                 TotalJobRunCount: j.CountsByStatus.Sum(c => c.Value), 
-                JobRunCountByStatus: j.CountsByStatus))
+                JobRunCountByStatus: j.CountsByStatus,
+                JobRunPercentageByStatus: j.PercentagesByStatus))
             .ToList();
         
         return new FinishedJobRunsStatisticsDto(generatedAtFormatted, jobRunCountsByStatusDtos);
