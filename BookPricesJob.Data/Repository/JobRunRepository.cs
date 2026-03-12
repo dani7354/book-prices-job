@@ -179,7 +179,7 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         var statusesSet = statusesToInclude.Select(x => x.ToString()).ToHashSet();
         var rows = await dbContext.JobRun
             .AsNoTracking()
-            .Select(x => new { x.JobId, x.Status, x.Job.Name })
+            .Select(x => new { x.JobId, x.Status, JobName = x.Job.Name })
             .ToListAsync();
 
         return rows
@@ -189,7 +189,11 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
                 g => g.Key,
                 g => g
                     .GroupBy(x => x.Status)
-                    .Select(sg => (sg.First().JobId, sg.First().Name, sg.Key, sg.Count()))
+                    .Select(sg =>
+                    {
+                        var firstTuple = sg.First();
+                        return (firstTuple.JobId, firstTuple.JobName, sg.Key, sg.Count());
+                    })
                     .ToList());
     }
 }
