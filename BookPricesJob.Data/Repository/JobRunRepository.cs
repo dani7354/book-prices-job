@@ -173,12 +173,16 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         dbContext.JobRun.Update(updatedJobRun);
     }
     
-    public async Task<Dictionary<string, List<(string JobId, string JobName, string Status, int Count)>>> GetJobRunCountsByJob()
+    public async Task<Dictionary<string, List<(string JobId, string JobName, string Status, int Count)>>> GetJobRunCountsByJob(
+        IEnumerable<JobRunStatus> statusesToInclude)
     {
+        var statusesSet = statusesToInclude.Select(x => x.ToString()).ToArray();
         var rows = await dbContext.JobRun
-            .Include(x => x.Job)
-            .Where(x => x.Status == nameof(JobRunStatus.Completed) || x.Status == nameof(JobRunStatus.Failed))
-            .Select(x => new { x.JobId, JobName = x.Job.Name, x.Status })
+            .AsNoTracking()
+            .Where(x => statusesSet.Contains(x.Status))
+            .GroupBy(x => new  { x.JobId, x.Status } )
+            .Select(
+                g => new { g.Key.JobId, JobName = g.First().Job.Name, g.Key.Status, Count = g.Count() })
             .ToListAsync();
 
         return rows

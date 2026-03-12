@@ -13,7 +13,7 @@ public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
         if (!jobs.Any())
             return new List<JobRunCountsByStatus>();
         
-        var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob();
+        var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob(FinishedStatuses);
         var jobRunCountsByJob = CreateJobRunCountsByJob(jobRunCounts);
         
         AddMissingJobsToJobRunCountsByJob(jobRunCountsByJob, jobs);

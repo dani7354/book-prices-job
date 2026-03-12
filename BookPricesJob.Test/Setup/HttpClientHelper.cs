@@ -40,15 +40,13 @@ public static class HttpClientHelper
         string jobId,
         JobRunPriority priority = JobRunPriority.Normal)
     {
-        var jobRunPayload = new CreateJobRunRequest()
-        {
-            JobId = jobId,
-            Priority = priority.ToString()
-        };
+        var jobRunPayload = TestData.GetCreateJobRunRequest(jobId, priority.ToString());
 
         var content = CreateStringPayload(jobRunPayload);
 
         var responseCreateJobRun = await client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        responseCreateJobRun.EnsureSuccessStatusCode();
+        
         var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
         Assert.NotNull(jobRunDto);
 
