@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Application.Contract;

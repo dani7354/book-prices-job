@@ -38,6 +38,17 @@ public static class TestData
         };
     }
     
+    public static CreateJobRunRequest GetCreateJobRunRequest(
+        string jobId,
+        string priority = "Normal")
+    {
+        return new CreateJobRunRequest
+        {
+            JobId = jobId,
+            Priority = priority
+        };
+    }
+
     public static UpdateJobFullRequest GetUpdateJobFullRequest(
         string id,
         string version,

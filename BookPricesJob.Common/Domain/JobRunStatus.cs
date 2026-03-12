@@ -1,5 +1,3 @@
-using System;
-
 namespace BookPricesJob.Common.Domain;
 
 public enum JobRunStatus

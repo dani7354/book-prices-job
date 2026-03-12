@@ -1,6 +1,8 @@
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using BookPricesJob.API.Model;
+using BookPricesJob.Common.Domain;
 
 namespace BookPricesJob.Test.Setup;
 
@@ -31,6 +33,24 @@ public static class HttpClientHelper
         response.EnsureSuccessStatusCode();
 
         return response;
+    }
+    
+    public static async Task<JobRunDto> CreateJobRunForJob(
+        HttpClient client,
+        string jobId,
+        JobRunPriority priority = JobRunPriority.Normal)
+    {
+        var jobRunPayload = TestData.GetCreateJobRunRequest(jobId, priority.ToString());
+
+        var content = CreateStringPayload(jobRunPayload);
+
+        var responseCreateJobRun = await client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        responseCreateJobRun.EnsureSuccessStatusCode();
+        
+        var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
+        Assert.NotNull(jobRunDto);
+
+        return jobRunDto;
     }
 
     public static async Task<HttpResponseMessage> PatchJobRun(HttpClient client, UpdateJobRunPartialRequest update)
