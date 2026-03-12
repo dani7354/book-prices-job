@@ -5,7 +5,7 @@ namespace BookPricesJob.API.Mapper;
 
 public static class StatisticsMapper
 {
-    private const string DateTimeFormat = "yyyy-MM-ddTHH:mm:ssZ";
+    private const string DateTimeFormat = "yyyy-MM-ddTHH:mm:ss";
     
     public static FinishedJobRunsStatisticsDto MapFinishedJobRunsToDto(
         IList<JobRunCountsByStatus> jobRunCountsByStatus,
