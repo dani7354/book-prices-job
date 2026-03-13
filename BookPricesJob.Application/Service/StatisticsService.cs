@@ -7,13 +7,17 @@ public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
 {
     private static readonly HashSet<JobRunStatus> FinishedStatuses = [ JobRunStatus.Completed, JobRunStatus.Failed ];
     
-    public async Task<IList<JobRunCountsByStatus>> GetJobRunCountsByJob()
+    public async Task<IList<JobRunCountsByStatus>> GetJobRunCountsByJob(int days)
     {
         var jobs = await unitOfWork.JobRepository.GetJobs();
         if (!jobs.Any())
             return new List<JobRunCountsByStatus>();
         
-        var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob(FinishedStatuses);
+        var afterDate = DateTime.Now.AddDays(-days);
+        var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob(
+            FinishedStatuses,
+            afterDate);
+        
         var jobRunCountsByJob = CreateJobRunCountsByJob(jobRunCounts);
         
         AddMissingJobsToJobRunCountsByJob(jobRunCountsByJob, jobs);

@@ -4,5 +4,5 @@ namespace BookPricesJob.Application.Contract;
 
 public interface IStatisticsService
 {
-    Task<IList<JobRunCountsByStatus>> GetJobRunCountsByJob();
+    Task<IList<JobRunCountsByStatus>> GetJobRunCountsByJob(int days);
 }
