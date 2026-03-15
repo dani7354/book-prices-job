@@ -20,7 +20,8 @@ public class StatisticsControllerTests
     [Fact]
     public async Task FinishedJobRuns_NoData_ReturnsSuccessWithEmptyJobRunsList()
     {
-        var response = await _client.GetAsync(Constant.FinishedJobRunsEndpoint);
+        const int days = 15;
+        var response = await _client.GetAsync(GetFinishedJobRunStatsUrl(days));
 
         response.EnsureSuccessStatusCode();
 
@@ -36,41 +37,61 @@ public class StatisticsControllerTests
     [Fact]
     public async Task FinishedJobRuns_WithJobAndJobRun_ReturnsCorrectCounts()
     {
-        var jobPayload = TestData.GetCreateJobRequest();
-        var jobContent = HttpClientHelper.CreateStringPayload(jobPayload);
-        var createJobResponse = await _client.PostAsync(Constant.JobsBaseEndpoint, jobContent);
-        Assert.Equal(HttpStatusCode.Created, createJobResponse.StatusCode);
+        const int completedCount = 6, failedCount = 6;
+        await CreateJobAndJobRuns(_client, completedCount: completedCount, failedCount: failedCount);
 
-        var createdJob = await createJobResponse.Content.ReadFromJsonAsync<JobDto>();
-        Assert.NotNull(createdJob);
-
-        var jobRunDto = await HttpClientHelper.CreateJobRunForJob(_client, createdJob.Id, JobRunPriority.High);
-        
-        var updateJobRunRequest = new UpdateJobRunPartialRequest()
-        {
-            JobId = createdJob.Id,
-            JobRunId = jobRunDto.Id,
-            Status = nameof(JobRunStatus.Completed),
-            Version = jobRunDto.Version
-        };
-        
-        var updateJobRunResponse = await HttpClientHelper.PatchJobRun(_client, updateJobRunRequest);
-        updateJobRunResponse.EnsureSuccessStatusCode();
-
-        var response = await _client.GetAsync(Constant.FinishedJobRunsEndpoint);
+        const int days = 15;
+        var response = await _client.GetAsync(GetFinishedJobRunStatsUrl(days));
         response.EnsureSuccessStatusCode();
 
         var statisticsDto = await response.Content.ReadFromJsonAsync<FinishedJobRunsStatisticsDto>();
         Assert.NotNull(statisticsDto);
         Assert.NotEmpty(statisticsDto.JobRuns);
 
-        var jobRunCount = statisticsDto.JobRuns.FirstOrDefault(x => x.JobId == createdJob.Id);
+        var jobRunCount = statisticsDto.JobRuns.FirstOrDefault();
         Assert.NotNull(jobRunCount);
-        Assert.Equal(createdJob.Id, jobRunCount.JobId);
-        Assert.Equal(createdJob.Name, jobRunCount.JobName);
         
-        Assert.Equal(1, statisticsDto.JobRuns.First().TotalJobRunCount);
-        Assert.Equal(1, statisticsDto.JobRuns.First().JobRunCountByStatus[nameof(JobRunStatus.Completed)]);
-        Assert.Equal(100, statisticsDto.JobRuns.First().JobRunPercentageByStatus[nameof(JobRunStatus.Completed)]);
+        Assert.Equal(completedCount + failedCount, statisticsDto.JobRuns.First().TotalJobRunCount);
+        Assert.Equal(completedCount, statisticsDto.JobRuns.First().JobRunCountByStatus[nameof(JobRunStatus.Completed)]);
+        Assert.Equal(50, statisticsDto.JobRuns.First().JobRunPercentageByStatus[nameof(JobRunStatus.Completed)]);
     }
+
+    private static async Task CreateJobAndJobRuns(HttpClient client, int completedCount, int failedCount)
+    {
+        var jobPayload = TestData.GetCreateJobRequest();
+        var jobContent = HttpClientHelper.CreateStringPayload(jobPayload);
+        var createJobResponse = await client.PostAsync(Constant.JobsBaseEndpoint, jobContent);
+        Assert.Equal(HttpStatusCode.Created, createJobResponse.StatusCode);
+
+        var createdJob = await createJobResponse.Content.ReadFromJsonAsync<JobDto>();
+        Assert.NotNull(createdJob);
+
+        for (var i = 0; i < completedCount; i++)
+            await CreateJobRunForJobAndSetStatus(client, createdJob.Id, nameof(JobRunStatus.Completed));
+
+        for (var i = 0; i < failedCount; i++)
+            await CreateJobRunForJobAndSetStatus(client, createdJob.Id, nameof(JobRunStatus.Failed));
+    }
+
+    private static async Task CreateJobRunForJobAndSetStatus(
+        HttpClient client, 
+        string jobId, 
+        string status)
+    {
+        var jobRunDto = await HttpClientHelper.CreateJobRunForJob(client, jobId);
+        
+        var updateJobRunRequest = new UpdateJobRunPartialRequest
+        {
+            JobId = jobId,
+            JobRunId = jobRunDto.Id,
+            Status = status,
+            Version = jobRunDto.Version
+        };
+        
+        var updateJobRunResponse = await HttpClientHelper.PatchJobRun(client, updateJobRunRequest);
+        updateJobRunResponse.EnsureSuccessStatusCode();
+    }
+
+    private static string GetFinishedJobRunStatsUrl(int days)
+        => $"{Constant.FinishedJobRunsEndpoint}?days={days}";
 }

@@ -14,7 +14,7 @@ public class StatisticsController(IStatisticsService statisticsService) : Contro
     [HttpGet("finished-job-runs")]
     [Authorize(Policy = Constant.JobRunnerPolicy)]
     [ProducesResponseType<FinishedJobRunsStatisticsDto>(StatusCodes.Status200OK)]
-    public async Task<IActionResult> FinishedJobRuns([FromRoute]int? days)
+    public async Task<IActionResult> FinishedJobRuns([FromQuery] int? days)
     {
         if (days is null or < 0)
             days = 365;

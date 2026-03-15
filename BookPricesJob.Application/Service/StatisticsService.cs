@@ -13,7 +13,7 @@ public class StatisticsService(IUnitOfWork unitOfWork) : IStatisticsService
         if (!jobs.Any())
             return new List<JobRunCountsByStatus>();
         
-        var afterDate = DateTime.Now.AddDays(-days);
+        var afterDate = DateTime.UtcNow.AddDays(-days);
         var jobRunCounts = await unitOfWork.JobRunRepository.GetJobRunCountsByJob(
             FinishedStatuses,
             afterDate);
