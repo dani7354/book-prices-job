@@ -180,6 +180,7 @@ public class JobRunRepository(DefaultDatabaseContext dbContext) : IJobRunReposit
         var statusesSet = statusesToInclude.Select(x => x.ToString()).ToHashSet();
         var rows = await dbContext.JobRun
             .AsNoTracking()
+            .Where(x => x.Created >= afterDate)
             .Select(x => new { x.JobId, x.Status, JobName = x.Job.Name })
             .ToListAsync();
 
