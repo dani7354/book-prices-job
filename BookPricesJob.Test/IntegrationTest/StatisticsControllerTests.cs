@@ -33,6 +33,22 @@ public class StatisticsControllerTests
         var contentType = response.Content.Headers.ContentType?.ToString();
         Assert.Equal(Constant.ContentTypeValue, contentType);
     }
+    
+    [Fact]
+    public async Task FinishedJobRuns_MissingDaysParameter_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync(Constant.FinishedJobRunsEndpoint);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+    
+    [Fact]
+    public async Task FinishedJobRuns_NegativeDaysVAue_ReturnsBadRequest()
+    {
+        var response = await _client.GetAsync(GetFinishedJobRunStatsUrl(-100));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
 
     [Fact]
     public async Task FinishedJobRuns_WithJobAndJobRun_ReturnsCorrectCounts()
