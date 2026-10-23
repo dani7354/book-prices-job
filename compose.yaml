@@ -10,14 +10,14 @@ services:
     networks:
       - localnetwork
   redis:
-    image: redis:7.4.1-alpine
+    image: redis:8.10-alpine
     restart: always
     ports:
       - "6379:6379"
     networks:
       - localnetwork
   db:
-    image: mysql:8.4.0
+    image: mysql:8.4.7
     command: --mysql-native-password=ON
     restart: always
     env_file: Docker/db.env
