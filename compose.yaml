@@ -10,7 +10,7 @@ services:
     networks:
       - localnetwork
   redis:
-    image: redis:7.4.1-alpine
+    image: redis:8.10-alpine
     restart: always
     ports:
       - "6379:6379"
