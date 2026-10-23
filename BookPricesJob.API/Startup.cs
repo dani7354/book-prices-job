@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.Mime;
 using BookPricesJob.Data.Entity;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using BookPricesJob.API.Service;
 using BookPricesJob.API.Filter;
 using BookPricesJob.Data.DatabaseContext;
@@ -142,14 +142,19 @@ public class Startup
 
         services.AddScoped<ICache, RedisCache>();
     }
-
+    
     public void AddSwagger(IServiceCollection services)
     {
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();
+
         services.AddSwaggerGen(options =>
         {
-            options.SwaggerDoc("v1", new OpenApiInfo { Title = "BookPricesJob.API", Version = "v1" });
+            options.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "BookPricesJob.API",
+                Version = "v1"
+            });
+
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
@@ -160,19 +165,9 @@ public class Startup
                 Scheme = "bearer"
             });
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
             {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type=ReferenceType.SecurityScheme,
-                            Id="Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
+                [new OpenApiSecuritySchemeReference("Bearer", document)] = []
             });
         });
     }
