@@ -52,7 +52,7 @@ public sealed class AuthController(
     }
     
     [HttpPost("register")]
-    //[Authorize(Policy = Constant.JobManagerPolicy)]
+    [Authorize(Policy = Constant.JobManagerPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] UserRegisterRequest registerRequest)
