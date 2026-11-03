@@ -10,6 +10,7 @@ public static class JobMapper
         return new Job(
             Id: null,
             IsActive: createRequest.IsActive ?? false,
+            RunsWithArguments: createRequest.RunsWithArguments ?? false,
             Name: createRequest.Name,
             Description: createRequest.Description,
             Version: Guid.NewGuid().ToString(),
@@ -23,6 +24,7 @@ public static class JobMapper
         return job with 
             { 
                 IsActive = updateRequest.IsActive ?? false, 
+                RunsWithArguments = updateRequest.RunsWithArguments ?? false,
                 Name = updateRequest.Name, 
                 Description = updateRequest.Description,
                 Version = updateRequest.Version,
@@ -33,6 +35,7 @@ public static class JobMapper
     {
         return new JobListItemDto(
             job.IsActive,
+            job.RunsWithArguments,
             job.Id!,
             job.Name,
             job.Description,
@@ -45,6 +48,7 @@ public static class JobMapper
         return new JobDto(
             Id: job.Id!,
             IsActive: job.IsActive,
+            RunsWithArguments: job.RunsWithArguments,
             Name: job.Name,
             Description: job.Description,
             Version: job.Version,

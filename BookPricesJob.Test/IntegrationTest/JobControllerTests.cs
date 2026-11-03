@@ -78,7 +78,8 @@ public class JobControllerTests
         var jobRunPayload = new CreateJobRequest
         {
             Name = "JOB NAME",
-            IsActive = true
+            IsActive = true,
+            RunsWithArguments = true
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);

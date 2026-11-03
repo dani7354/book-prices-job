@@ -12,4 +12,7 @@ public class CreateJobRequest
     
     [Required]
     public bool? IsActive { get; init; }
+    
+    [Required]
+    public bool? RunsWithArguments { get; init; }
 }

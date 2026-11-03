@@ -14,6 +14,7 @@ public class UpdateJobPartialRequest
     [VersionFormat] 
     public string Version { get; init; } = null!;
     public bool? IsActive { get; init; }
+    public bool? RunsWithArguments { get; init; }
     public string? Name { get; init; }
     public string? Description { get; init; }
 }

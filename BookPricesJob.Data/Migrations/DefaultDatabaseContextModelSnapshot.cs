@@ -17,7 +17,7 @@ namespace BookPricesJob.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -95,6 +95,9 @@ namespace BookPricesJob.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
+
+                    b.Property<bool>("RunsWithArguments")
+                        .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Version")
                         .IsConcurrencyToken()

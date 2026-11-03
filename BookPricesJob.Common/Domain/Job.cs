@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public record Job(
     string? Id,
     bool IsActive,
+    bool RunsWithArguments,
     string Name,
     string Description,
     string Version,
