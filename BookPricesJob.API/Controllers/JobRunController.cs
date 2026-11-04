@@ -51,11 +51,6 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
-        var jobId = createJobRunRequest.JobId;
-        var job = await jobService.GetJobById(jobId);
-        if (job is null || !job.IsActive)
-            return BadRequest($"Job ({jobId}) not found or perhaps it's not active!");
         
         var jobRun = JobRunMapper.MapToDomain(createJobRunRequest);
         var jobRunId = await jobService.CreateJobRun(jobRun);
@@ -63,7 +58,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
 
         jobRun = await jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
-            return BadRequest();
+            return BadRequest("Failed to retrieve the created job run!");
+        
+        var job = await jobService.GetJobById(jobRun.JobId);
+        if (job is null)
+            return BadRequest("Failed to retrieve the job for the created job run!");
         
         var jobRunResponseDto = JobRunMapper.MapToDto(jobRun, job.Name);
 

@@ -297,7 +297,10 @@ public class JobRunControllerTests
     [Fact]
     public async Task Create_NewJobRunWithArguments_ReturnsSuccessAndCreatedObjectWithArguments()
     {
-        var responseCreateJob = await HttpClientHelper.PostJob(_client, TestData.GetCreateJobRequest());
+        var responseCreateJob = await HttpClientHelper.PostJob(
+            _client, 
+            TestData.GetCreateJobRequest(runsWithArguments: true));
+        
         responseCreateJob.EnsureSuccessStatusCode();
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
 

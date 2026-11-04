@@ -17,6 +17,7 @@ public class CustomExceptionFilterAttribute(ILogger<CustomExceptionFilterAttribu
             NotFoundException => StatusCodes.Status404NotFound,
             DbUpdateConcurrencyException => StatusCodes.Status412PreconditionFailed,
             JobRunUpdateInvalidRequestException => StatusCodes.Status400BadRequest,
+            JobCreateInvalidRequestException => StatusCodes.Status400BadRequest,
 
             _ => StatusCodes.Status500InternalServerError
         };
