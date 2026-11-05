@@ -84,10 +84,6 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var job = await jobService.GetJobById(updateJobRunRequest.JobId);
-        if (job is null)
-            return BadRequest();
-
         var jobRun = await jobService.GetJobRunById(id);
         if (jobRun is null)
             return BadRequest();
