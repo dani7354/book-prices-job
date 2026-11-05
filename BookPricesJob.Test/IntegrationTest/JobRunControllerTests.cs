@@ -59,9 +59,10 @@ public class JobRunControllerTests
     private static async Task<JobRunDto> CreateJobWithJobRun(
         HttpClient client,
         JobRunPriority priority = JobRunPriority.Normal,
-        bool isActive = true)
+        bool isActive = true,
+        bool runsWithArguments = false)
     {
-        var jobRequest = TestData.GetCreateJobRequest(isActive: isActive);
+        var jobRequest = TestData.GetCreateJobRequest(isActive: isActive, runsWithArguments: runsWithArguments);
         var responseCreateJob = await HttpClientHelper.PostJob(client, jobRequest);
         responseCreateJob.EnsureSuccessStatusCode();
         var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
@@ -70,12 +71,14 @@ public class JobRunControllerTests
         var jobRunPayload = new CreateJobRunRequest
         {
             JobId = jobId,
-            Priority = priority.ToString()
+            Priority = priority.ToString(),
+            Arguments = runsWithArguments ? [
+                new () { Name = "Arg1", Type = "String", Values = ["Value1"] }] : []
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
         var responseCreateJobRun = await client.PostAsync(Constant.JobRunsBaseEndpoint, content);
-        responseCreateJob.EnsureSuccessStatusCode();
+        responseCreateJobRun.EnsureSuccessStatusCode();
         
         var jobRunDto = await responseCreateJobRun.Content.ReadFromJsonAsync<JobRunDto>();
         Assert.NotNull(jobRunDto);
@@ -385,7 +388,7 @@ public class JobRunControllerTests
     public async Task UpdateFull_JobRunStatusArguments_ReturnsSuccessAndCorrectArguments(
         List<JobRunArgumentDto> arguments)
     {
-        var jobRunDto = await CreateJobWithJobRun(_client);
+        var jobRunDto = await CreateJobWithJobRun(_client, runsWithArguments: true);
 
         var updateJobRunPayload = new UpdateJobRunFullRequest
         {
@@ -417,7 +420,10 @@ public class JobRunControllerTests
             Assert.NotNull(firstArgumentUpdated);
             Assert.Equal(firstArgumentOriginal.Name, firstArgumentUpdated.Name);
             Assert.Equal(firstArgumentOriginal.Type, firstArgumentUpdated.Type);
-            Assert.Equal(firstArgumentOriginal.Values, firstArgumentUpdated.Values);
+            
+            var expectedValues = firstArgumentOriginal.Values.OrderBy(x => x).ToArray();
+            var actualValues = firstArgumentUpdated.Values.OrderBy(x => x).ToArray();
+            Assert.Equal(expectedValues, actualValues);
         }
     }
 
@@ -547,7 +553,7 @@ public class JobRunControllerTests
     public async Task UpdatePartial_ArgumentsForCompletedJobRun_ReturnsBadRequest()
     {
         var initialArguments = JobRunArguments.ElementAt(1)[0] as List<JobRunArgumentDto>;
-        var jobRunDto = await CreateJobWithJobRun(_client);
+        var jobRunDto = await CreateJobWithJobRun(_client, runsWithArguments: true);
 
         var updateJobRunPayload = new UpdateJobRunPartialRequest
         {
@@ -701,5 +707,81 @@ public class JobRunControllerTests
 
         var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
         Assert.Equal(HttpStatusCode.BadRequest, responseCreateJobRun.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdateFull_JobRunWithArgumentsForJobTakingNone_ReturnsBadRequest()
+    {
+        var responseCreateJob = await HttpClientHelper.PostJob(
+            _client, 
+            TestData.GetCreateJobRequest(runsWithArguments: false));
+        
+        responseCreateJob.EnsureSuccessStatusCode();
+        var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var jobId = jobDto!.Id;
+        var jobRunDto = await HttpClientHelper.CreateJobRunForJob(_client, jobId);
+
+        var updateJobRunPayload = new UpdateJobRunFullRequest
+        {
+            JobRunId = jobRunDto.Id,
+            JobId = jobRunDto.JobId,
+            Priority = jobRunDto.Priority,
+            Status = jobRunDto.Status,
+            Version = jobRunDto.Version,
+            Arguments =
+            [
+                new JobRunArgumentDto
+                {
+                    Name = "Arg1",
+                    Type = "String",
+                    Values = ["Value1"]
+                }
+            ]
+        };
+
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
+        var responseUpdateJobRun = await _client.PutAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
+            updateContent);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, responseUpdateJobRun.StatusCode);
+    }
+    
+    [Fact]
+    public async Task UpdatePartial_JobRunWithArgumentsForJobTakingNone_ReturnsBadRequest()
+    {
+        var responseCreateJob = await HttpClientHelper.PostJob(
+            _client, 
+            TestData.GetCreateJobRequest(runsWithArguments: false));
+        
+        responseCreateJob.EnsureSuccessStatusCode();
+        var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var jobId = jobDto!.Id;
+        var jobRunDto = await HttpClientHelper.CreateJobRunForJob(_client, jobId);
+
+        var updateJobRunPayload = new UpdateJobRunPartialRequest
+        {
+            JobRunId = jobRunDto.Id,
+            JobId = jobRunDto.JobId,
+            Version = jobRunDto.Version,
+            Arguments =
+            [
+                new JobRunArgumentDto
+                {
+                    Name = "Arg1",
+                    Type = "String",
+                    Values = ["Value1"]
+                }
+            ]
+        };
+
+        var updateContent = HttpClientHelper.CreateStringPayload(updateJobRunPayload);
+        var responseUpdateJobRun = await _client.PatchAsync(
+            $"{Constant.JobRunsBaseEndpoint}/{jobRunDto.Id}",
+            updateContent);
+        
+        Assert.Equal(HttpStatusCode.BadRequest, responseUpdateJobRun.StatusCode);
     }
 }

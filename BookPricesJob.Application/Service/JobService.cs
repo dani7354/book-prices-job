@@ -174,8 +174,8 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         var existingJobRun = await GetJobRunById(jobRunId);
         if (existingJobRun is null)
             throw new JobRunUpdateInvalidRequestException($"JobRun with ID {jobRunId} not found!");
-
-        ThrowIfJobRunUpdateNotAllowed(existingJobRun, jobRun);
+        
+        await ThrowIfJobRunUpdateNotAllowed(existingJobRun, jobRun);
         await unitOfWork.JobRunRepository.Update(jobRun);
         await unitOfWork.Complete();
         await cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(jobRun.Id!));
@@ -200,18 +200,26 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
             throw new JobCreateInvalidRequestException("Job does not accept arguments!");
     }
 
-    private void ThrowIfJobRunUpdateNotAllowed(JobRun existingJobRun, JobRun updatedJobRun)
+    private async Task ThrowIfJobRunUpdateNotAllowed(JobRun existingJobRun, JobRun updatedJobRun)
     { 
-        if (!_jobRunCompletedStatuses.Contains(existingJobRun.Status)) return;
+        var job = await GetJobById(updatedJobRun.JobId);
+        if (job is null)
+            throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} not found!");
+
+        if (!job.RunsWithArguments && updatedJobRun.Arguments.Any())
+            throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} takes no arguments!");
+
+        if (_jobRunCompletedStatuses.Contains(existingJobRun.Status))
+        {
+            if (existingJobRun.Priority != updatedJobRun.Priority)
+                throw new JobRunUpdateInvalidRequestException(
+                    $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
+                    $"of a completed JobRun (ID: {existingJobRun.Id}).");
         
-        if (existingJobRun.Priority != updatedJobRun.Priority)
-            throw new JobRunUpdateInvalidRequestException(
-                $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
-                $"of a completed JobRun (ID: {existingJobRun.Id}).");
-        
-        if (IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun))
-            throw new JobRunUpdateInvalidRequestException(
-                $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
+            if (IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun))
+                throw new JobRunUpdateInvalidRequestException(
+                    $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
+        }
     }
     
     public async Task DeleteJobRun(string id)
