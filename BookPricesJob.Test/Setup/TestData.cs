@@ -45,12 +45,14 @@ public static class TestData
     
     public static CreateJobRunRequest GetCreateJobRunRequest(
         string jobId,
-        string priority = "Normal")
+        string priority = "Normal",
+        List<JobRunArgumentDto>? arguments = null)
     {
         return new CreateJobRunRequest
         {
             JobId = jobId,
-            Priority = priority
+            Priority = priority,
+            Arguments = arguments ?? []
         };
     }
 

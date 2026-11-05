@@ -653,4 +653,53 @@ public class JobRunControllerTests
 
         Assert.Equal(HttpStatusCode.NotFound, responseDeleteJobRun.StatusCode);
     }
+
+    [Fact]
+    public async Task Create_JobRunWithArgumentsForJobTakingNone_ReturnsBadRequest()
+    {
+        var responseCreateJob = await HttpClientHelper.PostJob(
+            _client, 
+            TestData.GetCreateJobRequest(runsWithArguments: false));
+        
+        responseCreateJob.EnsureSuccessStatusCode();
+        var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var jobId = jobDto!.Id;
+
+        var jobRunPayload = TestData.GetCreateJobRunRequest(
+            jobId: jobId, 
+            arguments: 
+            [
+                new JobRunArgumentDto 
+                { 
+                    Name = "Arg1", 
+                    Type = "String", 
+                    Values = ["Value1"] 
+                }
+            ]);
+
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
+
+        var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        Assert.Equal(HttpStatusCode.BadRequest, responseCreateJobRun.StatusCode);
+    }
+    
+    [Fact]
+    public async Task Create_JobRunWithoutArgumentsForJobRequiringThem_ReturnsBadRequest()
+    {
+        var responseCreateJob = await HttpClientHelper.PostJob(
+            _client, 
+            TestData.GetCreateJobRequest(runsWithArguments: true));
+        
+        responseCreateJob.EnsureSuccessStatusCode();
+        var jobDto = await responseCreateJob.Content.ReadFromJsonAsync<JobDto>();
+
+        var jobId = jobDto!.Id;
+        var jobRunPayload = TestData.GetCreateJobRunRequest(jobId: jobId, arguments: []);
+
+        var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
+
+        var responseCreateJobRun = await _client.PostAsync(Constant.JobRunsBaseEndpoint, content);
+        Assert.Equal(HttpStatusCode.BadRequest, responseCreateJobRun.StatusCode);
+    }
 }
