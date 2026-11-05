@@ -117,7 +117,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             return BadRequest();
         
         var rowVersion = updateJobRunRequest.Version;
-        var newPriopriority = updateJobRunRequest.Priority;
+        var newPriority = updateJobRunRequest.Priority;
         var newStatus = updateJobRunRequest.Status;
         var arguments = updateJobRunRequest.Arguments;
         
@@ -126,7 +126,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };
         if (newStatus is not null && Enum.TryParse<JobRunStatus>(newStatus, out var status))
             jobRun = jobRun with { Status = status };
-        if (newPriopriority is not null && Enum.TryParse<JobRunPriority>(newPriopriority, out var priority))
+        if (newPriority is not null && Enum.TryParse<JobRunPriority>(newPriority, out var priority))
             jobRun = jobRun with { Priority = priority };
         if (updateJobRunRequest.Arguments.Any())
             jobRun = jobRun with 

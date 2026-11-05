@@ -206,9 +206,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         if (job is null)
             throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} not found!");
 
-        if (!job.RunsWithArguments && updatedJobRun.Arguments.Any())
-            throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} takes no arguments!");
-
+        var argumentsUpdated = IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun);
         if (_jobRunCompletedStatuses.Contains(existingJobRun.Status))
         {
             if (existingJobRun.Priority != updatedJobRun.Priority)
@@ -216,10 +214,13 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
                     $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
                     $"of a completed JobRun (ID: {existingJobRun.Id}).");
         
-            if (IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun))
+            if (argumentsUpdated)
                 throw new JobRunUpdateInvalidRequestException(
                     $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
         }
+        
+        if (!job.RunsWithArguments && argumentsUpdated)
+            throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} takes no arguments!");
     }
     
     public async Task DeleteJobRun(string id)
