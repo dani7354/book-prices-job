@@ -78,7 +78,8 @@ public class JobControllerTests
         var jobRunPayload = new CreateJobRequest
         {
             Name = "JOB NAME",
-            IsActive = true
+            IsActive = true,
+            RunsWithArguments = true
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobRunPayload);
@@ -121,7 +122,8 @@ public class JobControllerTests
             Name = job!.Name,
             Description = job.Description,
             Version = job.Version,
-            IsActive = false
+            IsActive = false,
+            RunsWithArguments = false
         };
 
         var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);
@@ -141,7 +143,8 @@ public class JobControllerTests
         var jobUpdatePayload = TestData.GetUpdateJobFullRequest(
             id: job!.Id, 
             version: Guid.NewGuid().ToString(), 
-            isActive: false, 
+            isActive: false,
+            runsWithArguments: true,
             name: "UPDATED NAME");
 
         var content = HttpClientHelper.CreateStringPayload(jobUpdatePayload);

@@ -8,6 +8,7 @@ public class Job
     [MaxLength(36)]
     public string Id { get; set; } = null!;
     public bool IsActive { get; set; }
+    public bool RunsWithArguments { get; set; }
     [MaxLength(256)]
     public string Name { get; set; } = null!;
     [MaxLength(256)]

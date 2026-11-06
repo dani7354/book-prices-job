@@ -103,6 +103,8 @@ public sealed class JobController(IJobService jobService, ILogger<JobController>
         job = job with { Version = jobUpdateRequest.Version };
         if (jobUpdateRequest.IsActive.HasValue)
             job = job with { IsActive = jobUpdateRequest.IsActive.Value };
+        if (jobUpdateRequest.RunsWithArguments.HasValue)
+            job = job with { RunsWithArguments = jobUpdateRequest.RunsWithArguments.Value };
         if (jobUpdateRequest.Name != null)
             job = job with { Name = jobUpdateRequest.Name };
         if (jobUpdateRequest.Description != null)

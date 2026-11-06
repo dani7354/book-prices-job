@@ -11,6 +11,7 @@ public static class JobMapper
         return new Job(
             job.Id,
             job.IsActive,
+            job.RunsWithArguments,
             job.Name,
             job.Description,
             job.Version,
@@ -28,6 +29,7 @@ public static class JobMapper
         jobEntity ??= new Entity.Job();
         jobEntity.Id = jobUpdated.Id ?? Guid.NewGuid().ToString();
         jobEntity.IsActive = jobUpdated.IsActive;
+        jobEntity.RunsWithArguments = jobUpdated.RunsWithArguments;
         jobEntity.Name = jobUpdated.Name;
         jobEntity.Description = jobUpdated.Description;
         jobEntity.Version = Guid.NewGuid().ToString();

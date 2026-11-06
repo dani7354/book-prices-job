@@ -158,6 +158,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
 
     public async Task<string> CreateJobRun(JobRun jobRun)
     {
+        await ThrowIfJobRunCreationIsNotAllowed(jobRun);
         var id = await unitOfWork.JobRunRepository.Add(jobRun);
         await unitOfWork.Complete();
         await cache.RemoveAsync(CacheKeyGenerator.GenerateJobKey(jobRun.JobId));
@@ -173,8 +174,8 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         var existingJobRun = await GetJobRunById(jobRunId);
         if (existingJobRun is null)
             throw new JobRunUpdateInvalidRequestException($"JobRun with ID {jobRunId} not found!");
-
-        ThrowIfJobRunUpdateNotAllowed(existingJobRun, jobRun);
+        
+        await ThrowIfJobRunUpdateNotAllowed(existingJobRun, jobRun);
         await unitOfWork.JobRunRepository.Update(jobRun);
         await unitOfWork.Complete();
         await cache.RemoveAsync(CacheKeyGenerator.GenerateJobRunKey(jobRun.Id!));
@@ -183,16 +184,43 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         await cache.RemoveAsync(CacheKeyGenerator.GenerateJobListKey());
     }
 
-    private void ThrowIfJobRunUpdateNotAllowed(JobRun existingJobRun, JobRun updatedJobRun)
+    private async Task ThrowIfJobRunCreationIsNotAllowed(JobRun jobRun)
+    {
+        var job = await GetJobById(jobRun.JobId);
+        if (job is null)
+            throw new JobCreateInvalidRequestException("Job not found!");
+        
+        if (!job.IsActive)
+            throw new JobCreateInvalidRequestException("Job is not active!");
+        
+        if (job.RunsWithArguments && !jobRun.Arguments.Any())
+            throw new JobCreateInvalidRequestException("Job requires arguments but none were provided!");
+        
+        if (!job.RunsWithArguments && jobRun.Arguments.Any())
+            throw new JobCreateInvalidRequestException("Job does not accept arguments!");
+    }
+
+    private async Task ThrowIfJobRunUpdateNotAllowed(JobRun existingJobRun, JobRun updatedJobRun)
     { 
-        if (!_jobRunCompletedStatuses.Contains(existingJobRun.Status)) return;
-        if (existingJobRun.Priority != updatedJobRun.Priority)
-            throw new JobRunUpdateInvalidRequestException(
-                $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
-                $"of a completed JobRun (ID: {existingJobRun.Id}).");
-        if (IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun))
-            throw new JobRunUpdateInvalidRequestException(
-                $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
+        var job = await GetJobById(updatedJobRun.JobId);
+        if (job is null)
+            throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} not found!");
+
+        var argumentsUpdated = IsJobRunArgumentsUpdated(existingJobRun, updatedJobRun);
+        if (_jobRunCompletedStatuses.Contains(existingJobRun.Status))
+        {
+            if (existingJobRun.Priority != updatedJobRun.Priority)
+                throw new JobRunUpdateInvalidRequestException(
+                    $"Cannot update priority ({existingJobRun.Priority} -> {updatedJobRun.Priority}) " +
+                    $"of a completed JobRun (ID: {existingJobRun.Id}).");
+        
+            if (argumentsUpdated)
+                throw new JobRunUpdateInvalidRequestException(
+                    $"Cannot update arguments of a completed JobRun (ID: {existingJobRun.Id}).");
+        }
+        
+        if (!job.RunsWithArguments && argumentsUpdated)
+            throw new JobRunUpdateInvalidRequestException($"Job with ID {existingJobRun.JobId} takes no arguments!");
     }
     
     public async Task DeleteJobRun(string id)
@@ -227,7 +255,7 @@ public class JobService(IUnitOfWork unitOfWork, ICache cache) : IJobService
         return jobRuns
             .Where(x => jobsForJobRuns.ContainsKey(x.JobId))
             .Select(x => (x, jobsForJobRuns[x.JobId]))
-            .ToList();
+            .ToArray();
     }
     
     private static bool IsJobRunArgumentsUpdated(JobRun existingJobRun, JobRun updatedJobRun)

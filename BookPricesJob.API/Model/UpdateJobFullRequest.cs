@@ -9,6 +9,9 @@ public class UpdateJobFullRequest
     public bool? IsActive { get; init; }
     
     [Required]
+    public bool? RunsWithArguments { get; init; }
+    
+    [Required]
     public string Id { get; init; } = null!;
     
     [Required]

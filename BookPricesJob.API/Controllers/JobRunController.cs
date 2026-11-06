@@ -51,11 +51,6 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
-        var jobId = createJobRunRequest.JobId;
-        var job = await jobService.GetJobById(jobId);
-        if (job is null || !job.IsActive)
-            return BadRequest($"Job ({jobId}) not found or perhaps it's not active!");
         
         var jobRun = JobRunMapper.MapToDomain(createJobRunRequest);
         var jobRunId = await jobService.CreateJobRun(jobRun);
@@ -63,7 +58,11 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
 
         jobRun = await jobService.GetJobRunById(jobRunId);
         if (jobRun is null)
-            return BadRequest();
+            return BadRequest("Failed to retrieve the created job run!");
+        
+        var job = await jobService.GetJobById(jobRun.JobId);
+        if (job is null)
+            return BadRequest("Failed to retrieve the job for the created job run!");
         
         var jobRunResponseDto = JobRunMapper.MapToDto(jobRun, job.Name);
 
@@ -84,10 +83,6 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
 
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
-
-        var job = await jobService.GetJobById(updateJobRunRequest.JobId);
-        if (job is null)
-            return BadRequest();
 
         var jobRun = await jobService.GetJobRunById(id);
         if (jobRun is null)
@@ -122,7 +117,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             return BadRequest();
         
         var rowVersion = updateJobRunRequest.Version;
-        var newPriopriority = updateJobRunRequest.Priority;
+        var newPriority = updateJobRunRequest.Priority;
         var newStatus = updateJobRunRequest.Status;
         var arguments = updateJobRunRequest.Arguments;
         
@@ -131,7 +126,7 @@ public sealed class JobRunController(IJobService jobService, ILogger<JobRunContr
             jobRun = jobRun with { ErrorMessage = updateJobRunRequest.ErrorMessage };
         if (newStatus is not null && Enum.TryParse<JobRunStatus>(newStatus, out var status))
             jobRun = jobRun with { Status = status };
-        if (newPriopriority is not null && Enum.TryParse<JobRunPriority>(newPriopriority, out var priority))
+        if (newPriority is not null && Enum.TryParse<JobRunPriority>(newPriority, out var priority))
             jobRun = jobRun with { Priority = priority };
         if (updateJobRunRequest.Arguments.Any())
             jobRun = jobRun with 
